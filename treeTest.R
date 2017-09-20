@@ -3,14 +3,25 @@
 #treeTest.R
 #predict: play == yes
 
-library(readr)
+library(tidyverse)
 source("util.R")
+
 
 args <- commandArgs(trailingOnly = TRUE)
 #read training data
 training <- read_csv(args[1])
-#print to console
-print(training)
+#add dummy column to mimic raw data before feature extraction from book data
+if (args[1] == "weatherTraining.csv"){
+  add_column(training, a = 0, .before = "Outlook" )
+}
+
+#----------------------------------------------------------------#
+# feature extraction
+# call Danny's feature extraction methods and append as columns
+# create a vector of what the info gain is for each feature and pair with 
+###the name of that feature
+
+
 
 #--------deal with NAs and NANs here in more complex datasets----#
 
