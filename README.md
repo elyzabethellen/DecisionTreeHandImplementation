@@ -1,23 +1,31 @@
 # CS529-Fall2017
 
 ===== ===== ===== ===== 
+
 Current instructions for the feature extractor, and explanation of data: 
 
 to use, you can run the script using python (I have 2.7 but it should work with > 3.3 too?) 
 using this command: 
 
 
-for training: 
-python featureBuilder.py [starting CSV file] [output CSV file] 
+for training:
+
+**python featureBuilder.py [starting CSV file] [output CSV file]**
+
 OR 
+
 for testing: 
-python featureBuilder.py [starting CSV file] [output CSV file] h 
+
+**python featureBuilder.py [starting CSV file] [output CSV file] h** 
 
 ... the extra h at the end is just a flag which turns off "Class" column (for the real data which won't have this column :)
 
 this will build an output CSV file will the following additional features from the main data: 
+
 it will label the DNA,and Class respectively and then add:
+
 first, last characters, (first/last) 
+
 a Y/N flag which covers if the given string is 25 % made of a particular character (there are four one for each AGTC, labeled as 25pA,25pT, etc...) ) 
 
 then several sequences of 2 letters, these are output from the markov model which covers the probability a given transition occurs given a starting state 
