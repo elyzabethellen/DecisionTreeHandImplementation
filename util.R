@@ -1,5 +1,5 @@
 #Elizabeth E. Esterly
-#Last revision 09/10/2017
+#Last revision 09/21/2017
 #util.R
 #function library script
 
