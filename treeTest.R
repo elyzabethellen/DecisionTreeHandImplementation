@@ -34,9 +34,12 @@ dEnt <- datasetEntropy(last(training), outcomes)
 cat("Dataset Entropy = ",dEnt)
 cat("Column names check = ", colnames(training))
 
-# now get the info gain for each attribute (position) 
+# now get the info gain for each attribute (position) and store it
 # POSITION   INFO GAIN
 
+#for each attribute (1 - 60)
+  #get entropy of A, C, G, T, at that position all the way down the column, so read the char and get the outcome in last
+last(training)[i]
 
 
 #example for indexing into dataframe: get the 7th char of the second entry
