@@ -24,7 +24,7 @@ datasetEntropy <- function(d, vars){
 ##########infoGain#############
 #takes x
 #returns information gain g you get from using feature x as your tree split (bits)
-infoGain <- function(x){
+infoGain <- function(dEnt){
   g <- NULL
   return(g)
 }
