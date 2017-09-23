@@ -1,17 +1,18 @@
 #Elizabeth E. Esterly
-#Last revision 09/21/2017
+#Last revision 09/22/2017
 #util.R
 #function library script
 
 ##########datasetEntropy#######
-#takes dataset d
 #returns entropy s of dataset column vector d
-datasetEntropy <- function(d, vars){
-  totalEntries <- length(d)
-  categories <- length(vars)
+#d    :: dataset
+
+datasetEntropy <- function(d, outcomes, totalEntries){
+  categories <- length(outcomes)
+  #makes vector of zeroes of length categories
   occurences <- integer(categories)
   for(i in 1 : categories){
-    occurences[i] <- sum(d == vars[i]) #count number of occurences of each factor
+    occurences[i] <- sum(d == outcomes[i]) #count number of occurences of each factor
   }
   s <- 0
   for(j in 1 : categories){
@@ -22,9 +23,32 @@ datasetEntropy <- function(d, vars){
 }
 
 ##########infoGain#############
-#takes x
-#returns information gain g you get from using feature x as your tree split (bits)
-infoGain <- function(dEnt){
-  g <- NULL
-  return(g)
+
+#returns information gain  you get from using feature x as your tree split (bits)
+#dEnt     :: dataset entropy
+#col      :: column data
+#uniques  :: list of unique values from column
+#outcomes :: list of classes/classifications
+#totalEntries ::length of column
+infoGain <- function(dEnt, c, uniques, outcomes, totalEntries, class){
+  #for each unique value in col find how many occurences
+  x <- 0
+  for(i in 1 : length(uniques)){
+    print(uniques[i])
+    g <- 0
+    cat("g at the top of the loop", g, "\n")
+    t <- sum(c == uniques[i])
+    cat("t at the top of the loop", t, "\n")
+    #loop for outcomes, eg classes
+    for(j in 1 : length(outcomes)){
+      classCount <- sum(c == uniques[i] & class == outcomes[j])
+      if (classCount != 0) { g <- g + (-1* classCount / t) * log2( classCount / t)}
+      else{g <- g + 0}
+    }
+   x <- (t / nrow(c)) * g + x
+   print(x)
+  }
+  return(dEnt - x)
 }
+
+
