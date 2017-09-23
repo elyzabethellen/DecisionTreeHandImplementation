@@ -30,7 +30,7 @@ datasetEntropy <- function(d, outcomes, totalEntries){
 #uniques  :: list of unique values from column
 #outcomes :: list of classes/classifications
 #totalEntries ::length of column
-infoGain <- function(dEnt, c, uniques, outcomes, totalEntries, class){
+infoG <- function(dEnt, c, uniques, outcomes, totalEntries, class){
   #for each unique value in col find how many occurences
   x <- 0
   for(i in 1 : length(uniques)){
@@ -47,7 +47,7 @@ infoGain <- function(dEnt, c, uniques, outcomes, totalEntries, class){
   return(dEnt - x)
 }
 
-infoWrapper <- function(training, dEnt, totalEnt, idx){
+infoGain <- function(training, dEnt, totalEnt, idx){
   bestGain<- 0
   bestFeat <- NULL
   for(i in (idx + 1) : length(training)){
@@ -55,7 +55,7 @@ infoWrapper <- function(training, dEnt, totalEnt, idx){
     n <- colnames(c)
     uniques <- unique(c[[1]])
     totalEnt <- length(c)
-    i <- infoGain(dEnt, c, uniques, outcomes, totalEnt, training$Class)
+    i <- infoG(dEnt, c, uniques, outcomes, totalEnt, training$Class)
     if (i > bestGain) {
       bestGain <- i
       bestFeat <- n
