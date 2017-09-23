@@ -3,68 +3,43 @@
 #treeTest.R
 
 library(tidyverse)
-library(stringr)
 source("util.R")
+
+
+USEINFOGAIN <- TRUE
 
 args <- commandArgs(trailingOnly = TRUE)
 #read training data
-#training <- read_csv(args[1], col_names = FALSE)
-#numFeatures <- args[2]
 training <- read_csv("weatherTraining.csv")
-#!!!!!!!!!!!!!!!!!!!!!!!!
-#?????????????
-View(training)
-
-#!!!!!!UNCOMMENT IF USING weathertraining.csv with launcher script
-#add dummy column to mimic raw data before features from book data
-#for ANY data, ensure that classification result is in the last column!
-#if (args[1] == "weatherTraining.csv"){
- #add_column(training, a = 0, .before = "Outlook" )
-#}#
-
-#----------------------------------------------------------------#
-#!!!!!!!feature extraction and pre-processing section!!!!!!!!!!!!
-# call Danny's feature extraction methods and append as columns
-# with values of the feature for each one
-# then store a quick access data structure 
-# with what the info gain is for each data point for
-# each feature 
-#---i.e., for our features
-# call first letter
-# call last letter
-# call frequencyOfAppearance
-# call permutations
 totalEntries <- nrow(training)
 
 #calculate entropy of data set
 outcomes <- unique(training$Class)
 dEnt <- datasetEntropy(training$Class, outcomes, totalEntries)
-cat("Dataset Entropy = ",dEnt)
-cat("Column names check = ", colnames(training))
 
-#for weather set
-# now get the info gain for each attribute and store it
-cnames <- colnames(training)
-idx <- which(cnames == 'Class')
-infoz <- numeric(ncol(training) - idx)
-idx <- idx + 1
-pos <- 1
-for(i in idx : length(training)){
-  c <- select(training, i:i)
-  uniques <- unique(c[[1]])
-  print(uniques)
-  totalEnt <- length(c)
-  infoz[pos] <- infoGain(dEnt, c, uniques, outcomes, totalEnt, training$Class)
-  pos <- pos + 1
+#start subset of data with class column--we'll need to refer to it.
+idx <- which(colnames(training) == 'Class')
+
+#if all the class members are of 1 type, we're done. else:
+
+
+# choose the split by infogain or gini index
+#----------------------------------------------------------------
+# (infoGain() calls infoG() on all remaining cols after Class)
+# splitChoice is a list: (infoGainVal, "feature col name")
+# higher value for info gain is better
+if (USEINFOGAIN == TRUE){
+  splitChoice <- infoGain(training, dEnt, totalEnt, idx)
+  print(splitChoice)
+}else{
+  # gini index. run on all features and find the lowest val.
+  # splitChoice is a list: (giniIndexVal, "feature col name", bestSubFeat)
+  # bestSubFeat is what you'll sub-split on
 }
-print(infoz)
 
-#infoz <- apply(subDat, 2, infoGain) 
-#print(infoz)
+#if splitChoice[1] < whatever because of chi-squared, then we stop here and assign all 
+#rem data points to majority rule leaf
+#else
 
-
-
-#the highest gain is the root of the tree
-#makeRoot
-
+#else 
 

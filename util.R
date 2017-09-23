@@ -24,21 +24,18 @@ datasetEntropy <- function(d, outcomes, totalEntries){
 
 ##########infoGain#############
 
-#returns information gain  you get from using feature x as your tree split (bits)
+#returns information gain you get from using feature as your tree split (bits)
 #dEnt     :: dataset entropy
 #col      :: column data
 #uniques  :: list of unique values from column
 #outcomes :: list of classes/classifications
 #totalEntries ::length of column
-infoGain <- function(dEnt, c, uniques, outcomes, totalEntries, class){
+infoG <- function(dEnt, c, uniques, outcomes, totalEntries, class){
   #for each unique value in col find how many occurences
   x <- 0
   for(i in 1 : length(uniques)){
-    print(uniques[i])
     g <- 0
-    cat("g at the top of the loop", g, "\n")
     t <- sum(c == uniques[i])
-    cat("t at the top of the loop", t, "\n")
     #loop for outcomes, eg classes
     for(j in 1 : length(outcomes)){
       classCount <- sum(c == uniques[i] & class == outcomes[j])
@@ -46,9 +43,25 @@ infoGain <- function(dEnt, c, uniques, outcomes, totalEntries, class){
       else{g <- g + 0}
     }
    x <- (t / nrow(c)) * g + x
-   print(x)
   }
   return(dEnt - x)
+}
+
+infoGain <- function(training, dEnt, totalEnt, idx){
+  bestGain<- 0
+  bestFeat <- NULL
+  for(i in (idx + 1) : length(training)){
+    c <- select(training, i:i)
+    n <- colnames(c)
+    uniques <- unique(c[[1]])
+    totalEnt <- length(c)
+    i <- infoG(dEnt, c, uniques, outcomes, totalEnt, training$Class)
+    if (i > bestGain) {
+      bestGain <- i
+      bestFeat <- n
+    }
+  }
+  return(c(bestGain, bestFeat))
 }
 
 
