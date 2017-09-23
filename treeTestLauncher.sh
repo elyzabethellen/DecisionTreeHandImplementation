@@ -1,2 +1,2 @@
 #!/bin/bash
-Rscript --vanilla treeTest.R "weatherTraining.csv" "Play" "Yes,No"
+Rscript --vanilla treeTest.R "weatherTraining.csv" 4
