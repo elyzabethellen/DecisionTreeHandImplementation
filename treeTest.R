@@ -4,9 +4,10 @@
 
 library(tidyverse)
 source("util.R")
+source("classes.R")
 
-
-USEINFOGAIN <- TRUE
+#IF FALSE THEN GINI INDEX WILL BE USED
+USEINFOGAIN <- FALSE
 
 args <- commandArgs(trailingOnly = TRUE)
 #read training data
@@ -29,17 +30,31 @@ idx <- which(colnames(training) == 'Class')
 # splitChoice is a list: (infoGainVal, "feature col name")
 # higher value for info gain is better
 if (USEINFOGAIN == TRUE){
-  splitChoice <- infoGain(training, dEnt, totalEnt, idx)
-  print(splitChoice)
+  splitChoice <- infoGain(training, dEnt, totalEnt, idx, outcomes)
+  
 }else{
   # gini index. run on all features and find the lowest val.
-  # splitChoice is a list: (giniIndexVal, "feature col name", bestSubFeat)
-  # bestSubFeat is what you'll sub-split on
+  # splitChoice is a list: (giniIndexVal, "feature col name")
+  splitChoice <- giniIndex(training, idx, outcomes)
+  firstSplitIdx <- which(colnames(training) == splitChoice[2])
 }
 
-#if splitChoice[1] < whatever because of chi-squared, then we stop here and assign all 
+
+#make root node 
+ID3root <- new("root")
+#make new tree
+ID3tree <- new("id3tree", children = c(ID3root))
+print(ID3tree)
+
+#----------------begin recursive tree-builder
+#if all classes are the same or splitChoice[1] < significant val set by chi-squared, 
+# then we stop here and assign all 
 #rem data points to majority rule leaf
+if(length(unique(training$Class)) == 1){
+  
+}
+
 #else
 
-#else 
+
 

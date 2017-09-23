@@ -9,10 +9,12 @@
 
 datasetEntropy <- function(d, outcomes, totalEntries){
   categories <- length(outcomes)
+  
   #makes vector of zeroes of length categories
   occurences <- integer(categories)
   for(i in 1 : categories){
-    occurences[i] <- sum(d == outcomes[i]) #count number of occurences of each factor
+    #count number of occurences of each factor
+    occurences[i] <- sum(d == outcomes[i]) 
   }
   s <- 0
   for(j in 1 : categories){
@@ -22,8 +24,8 @@ datasetEntropy <- function(d, outcomes, totalEntries){
   return(s)
 }
 
-##########infoGain#############
-
+##########infoG#############
+#does the heavy lifting for infoGain()
 #returns information gain you get from using feature as your tree split (bits)
 #dEnt     :: dataset entropy
 #col      :: column data
@@ -36,6 +38,7 @@ infoG <- function(dEnt, c, uniques, outcomes, totalEntries, class){
   for(i in 1 : length(uniques)){
     g <- 0
     t <- sum(c == uniques[i])
+    
     #loop for outcomes, eg classes
     for(j in 1 : length(outcomes)){
       classCount <- sum(c == uniques[i] & class == outcomes[j])
@@ -47,7 +50,14 @@ infoG <- function(dEnt, c, uniques, outcomes, totalEntries, class){
   return(dEnt - x)
 }
 
-infoGain <- function(training, dEnt, totalEnt, idx){
+##########infoGain#############
+#returns best (information gain, "feature col name")
+#training :: dataset
+#dEnt     :: dataset entropy
+#idx      :: index of column to begin evaluating from
+#totalEnt ::length of column
+# outcomes:: vector of unique classes (e.g. ("Yes", "No"))
+infoGain <- function(training, dEnt, totalEnt, idx, outcomes){
   bestGain<- 0
   bestFeat <- NULL
   for(i in (idx + 1) : length(training)){
@@ -64,4 +74,39 @@ infoGain <- function(training, dEnt, totalEnt, idx){
   return(c(bestGain, bestFeat))
 }
 
+##########giniIndex#############
+#training :: dataset
+#idx      :: index of column to begin evaluating from
+# outcomes:: vector of unique classes (e.g. ("Yes", "No"))
+giniIndex <- function(training, idx, outcomes){
+  bestGiniScore <- Inf
+  bestGiniName <- NULL
+  for(i in (idx + 1) : length(training)){
+    c <- select(training, i:i)
+    n <- colnames(c)
+    
+    #get unique feature values for this column
+    uniques <- unique(c[[1]])
+    l <- nrow(c)
+    acc <- 0
+    #for each unique value for a feature, 
+    for (u in 1: length(uniques)){
+      #how many are here total?
+      t <- sum(c == uniques[u])
 
+      g <- 1
+      #eval Gini index and store name if it's the best
+      for (j in 1: length(outcomes)){
+                   #how many match a certain outcome?
+        g <- g - ((sum(c == uniques[u] & training$Class == outcomes[j])) / t) ^ 2
+      }
+      g <- g * (t / l) 
+      acc <- acc + g
+    }
+    if (acc < bestGiniScore){
+      bestGiniScore <- acc
+      bestGiniName <- n
+    }
+  }
+  return(c(bestGiniScore, bestGiniName))
+}
