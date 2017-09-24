@@ -81,6 +81,8 @@ infoGain <- function(training, dEnt, totalEnt, idx, outcomes){
 giniIndex <- function(training, idx, outcomes){
   bestGiniScore <- Inf
   bestGiniName <- NULL
+  lowestFeatScore <- Inf
+  lowestFeatName <- NULL
   for(i in (idx + 1) : length(training)){
     c <- select(training, i:i)
     n <- colnames(c)
@@ -89,11 +91,12 @@ giniIndex <- function(training, idx, outcomes){
     uniques <- unique(c[[1]])
     l <- nrow(c)
     acc <- 0
+    lowest <- Inf
+    lowestN <- NULL
     #for each unique value for a feature, 
     for (u in 1: length(uniques)){
       #how many are here total?
       t <- sum(c == uniques[u])
-
       g <- 1
       #eval Gini index and store name if it's the best
       for (j in 1: length(outcomes)){
@@ -101,12 +104,32 @@ giniIndex <- function(training, idx, outcomes){
         g <- g - ((sum(c == uniques[u] & training$Class == outcomes[j])) / t) ^ 2
       }
       g <- g * (t / l) 
+      # store ind scores here too to return for the split.
+      if (g < lowest){
+        lowest <- g
+        lowestN <- uniques[u]
+      }
       acc <- acc + g
     }
     if (acc < bestGiniScore){
       bestGiniScore <- acc
       bestGiniName <- n
+      lowestFeatScore <- lowest
+      lowestFeatName <- lowestN
     }
   }
-  return(c(bestGiniScore, bestGiniName))
+  return(c(bestGiniScore, bestGiniName, lowestFeatScore, lowestFeatName))
+}
+
+##################treeBuilder################
+#pVal               ::critical value for split stopping
+
+treeBuilder <-function(pVal, copiedTraining){
+  if((chiSquare() < pVal) | length(unique(copiedTraining$Class)) == 1) {
+    
+    return(makeLeaf(copiedTraining$Class))
+  }else{
+    
+  }
+
 }
