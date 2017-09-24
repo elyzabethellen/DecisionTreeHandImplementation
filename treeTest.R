@@ -21,8 +21,27 @@ dEnt <- datasetEntropy(training$Class, outcomes, totalEntries)
 #start subset of data with class column--we'll need to refer to it.
 idx <- which(colnames(training) == 'Class')
 
-#if all the class members are of 1 type, we're done. else:
+#make root node 
+ID3root <- new("root")
+#make new tree
+ID3tree <- new("id3tree", children = c(ID3root))
+print(ID3tree)
 
+
+##-----for Debug
+View(copiedTraining)
+
+#copy the training data as we will start to delete rows and columns as we use features
+#and make classifications
+copiedTraining <- training
+
+#----------------begin  tree-builder
+
+
+#treeBuilder(ID3tree, copiedTraining)
+#
+
+#make a test for splitting on the first Gini choice, Outlook for weather set
 
 # choose the split by infogain or gini index
 #----------------------------------------------------------------
@@ -30,31 +49,27 @@ idx <- which(colnames(training) == 'Class')
 # splitChoice is a list: (infoGainVal, "feature col name")
 # higher value for info gain is better
 if (USEINFOGAIN == TRUE){
-  splitChoice <- infoGain(training, dEnt, totalEnt, idx, outcomes)
+  splitChoice <- infoGain(copiedTraining, dEnt, totalEnt, idx, outcomes)
+  #infoGain will now split on all values of the features here, so the split may be non-binary
+  #(more than 2 children).
+  firstSplitIdx <- which(colnames(copiedTraining) == splitChoice[2])
+  #grab unique vals partition data and create nodes
   
 }else{
-  # gini index. run on all features and find the lowest val.
-  # splitChoice is a list: (giniIndexVal, "feature col name")
-  splitChoice <- giniIndex(training, idx, outcomes)
-  firstSplitIdx <- which(colnames(training) == splitChoice[2])
+  # gini index. run on all features and find the lowest val == best column to split on.
+  # splitChoice is a list: 
+  # (bestcolginiIndexVal, "best feature col name", best subfeature score, "Subfeature Name")
+  splitChoice <- giniIndex(copiedTraining, idx, outcomes)
+  print(splitChoice)
+  #GINI will implement a binary split partitioning the best scored subfeature value from the remaining values 
+  # i.e. in weather book example, first split would partition OVERCAST // SUNNY, RAIN
 }
 
 
-#make root node 
-ID3root <- new("root")
-#make new tree
-ID3tree <- new("id3tree", children = c(ID3root))
-print(ID3tree)
-
-#----------------begin recursive tree-builder
-#if all classes are the same or splitChoice[1] < significant val set by chi-squared, 
-# then we stop here and assign all 
-#rem data points to majority rule leaf
-if(length(unique(training$Class)) == 1){
+#level <- level + 1
+#}
   
-}
-
-#else
+#update root's children: c("Outlook", "Sunny"), c("Outlook", "Rain"), c("Outlook", "Overcast")
 
 
 
