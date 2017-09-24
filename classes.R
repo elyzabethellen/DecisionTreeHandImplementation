@@ -1,43 +1,28 @@
 #class file
 
-ID3Tree <- setClass(
-  "id3tree",
-  slots = c(
-    children = "list"
-  ),
-  prototype = list(
-    children = c()
-  )
-)
-
 Root <- setClass(
   "root", 
-  slots = c(
+  representation =list(
     children = "list"
     ),
-  prototype = list(
-    children = c()
-  )
+  contains = "NULL"
 )
 
 #setting parent to list type for easiness even though it's a single object, it could be a root or a node
 Node <- setClass(
-  "node", 
-  slots = c(
-    children = "list", 
-    parent = "list"),
-  prototype = list(
-    children = c(),
-    parent = c()
-  )
-  )
+  "node",  
+  representation = list(
+    children = "list"
+  ),
+  contains = "NULL"
+)
 
+#setting parent and consenVal to list type for easiness even though it's a single object, 
+#it could be a root or a node in parent case or numeric, char, anything in consenVal case
 Leaf <- setClass(
-  "leaf", slots = 
-    c(
-      parent = "list"
+  "leaf", 
+  representation = list( 
+      consenVal = "list"
       ),
-  prototype = list(
-    parent = c()
-  )
+  contains = "NULL"
   )
