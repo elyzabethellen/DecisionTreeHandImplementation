@@ -60,16 +60,14 @@ if (USEINFOGAIN == TRUE){
   # splitChoice is a list: 
   # (bestcolginiIndexVal, "best feature col name", best subfeature score, "Subfeature Name")
   splitChoice <- giniIndex(copiedTraining, idx, outcomes)
-  print(splitChoice)
   #GINI will implement a binary split partitioning the best scored subfeature value from the remaining values 
   # i.e. in weather book example, first split would partition OVERCAST // SUNNY, RAIN
 }
 
-
 #level <- level + 1
 #}
   
-#update root's children: c("Outlook", "Sunny"), c("Outlook", "Rain"), c("Outlook", "Overcast")
-
+testConsensus <- consen(copiedTraining, copiedTraining$Class)
+print(testConsensus)
 
 

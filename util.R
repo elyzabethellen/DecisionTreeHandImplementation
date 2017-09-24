@@ -133,3 +133,14 @@ treeBuilder <-function(pVal, copiedTraining){
   }
 
 }
+
+#############consen######################
+#returns the consensus value for Classification.
+#data            :: the general data
+#col             :: a column of that data
+consen <- function(data, Class){
+  ##don't forget about that nested tibble indexing her, i.e.:
+  ###> b[[1]]
+  #>>>>>"Yes"
+  return(subset(count(data, Class), Class == max(Class)))
+}
