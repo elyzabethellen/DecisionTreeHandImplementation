@@ -168,7 +168,7 @@ treeBuilder <-function(pVal, n, d, depth){
       # (bestcolginiIndexVal, "best feature col name", best subfeature score, "Subfeature Name")
       print("Gini index used")
       splitChoice <- giniIndex(d, outcomes)
-      cat("splitChoice value is ", splitChoice[4])
+      cat("splitChoice value is ", splitChoice[4], "\n")
       #is this split significant? 
       
       
@@ -180,18 +180,21 @@ treeBuilder <-function(pVal, n, d, depth){
       # i.e. in weather book example, first split would partition 1) OVERCAST // 2) SUNNY, RAIN
       #get parent column to split on
       getCol <- d %>% select(splitChoice[2])
-      
       #now split on features; have to pipe in the column so it doesn't string match instead of element matching
       #left will always be the split chosen by GINI
-      left <- getCol %>% filter(getCol == splitChoice[4])
-      #^^^^^^^^^^^^^^^^paste corresponding class vals on here too
+      left <- d %>% filter(getCol == splitChoice[4])
+      print("LEFT!")
+      print(left)
+      
       
       l <- new("node")
       l@name <- paste(splitChoice[2], splitChoice[4], sep = " ")
       
       #right is the other features lumped together
-      right <- getCol %>% filter(getCol != splitChoice[4])
-      #^^^^^^^^^^^^^^^^paste corresponding class vals on here too
+      right <- d %>% filter(getCol != splitChoice[4])
+      print("RIGHT!")
+      print(right)
+      
       
       r <- new("node")
       r@name <- paste(splitChoice[2], "not", splitChoice[4], sep = " ")
@@ -199,7 +202,7 @@ treeBuilder <-function(pVal, n, d, depth){
       #mark these as children of the current node and recurse on both, increasing depth and using limited dataset
       #can't do this by reference--work it out later
       #n@children <- c(l, r)
-      cat("The Gini children are created at depth ", depth)
+      cat("The Gini children are created at depth ", depth, "\n")
       treeBuilder(pVal, l, left, depth + 1)
       treeBuilder(pVal, r, right, depth + 1)
       
