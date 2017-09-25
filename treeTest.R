@@ -6,9 +6,10 @@ library(tidyverse)
 source("util.R")
 source("classes.R")
 
-
+#THESE WILL COME IN IN SCRIPT
 #IF FALSE THEN GINI INDEX WILL BE USED
 USEINFOGAIN <- FALSE
+PVAL <- 0.95
 
 args <- commandArgs(trailingOnly = TRUE)
 #read training data
@@ -24,15 +25,9 @@ copiedTraining <- training
 
 #make root node 
 r <- new("root")
-f <- new("node")
-g <- new("node")
-r@children <- c(f,g)
-print(r@children)
-f@name <- "f this"
-print(f@name)
 
 #----------------begin recursive tree-builder function
-#tree = treeBuilder(pVal, root, copiedTraining, 1)
+tree = treeBuilder(PVAL, root, copiedTraining, 1)
 #print(tree)
 
 

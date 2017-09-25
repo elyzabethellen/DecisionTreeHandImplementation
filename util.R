@@ -57,9 +57,10 @@ infoG <- function(dEnt, c, uniques, outcomes, totalEntries, class){
 #idx      :: index of column to begin evaluating from
 #totalEnt ::length of column
 # outcomes:: vector of unique classes (e.g. ("Yes", "No"))
-infoGain <- function(training, dEnt, totalEnt, idx, outcomes){
+infoGain <- function(training, dEnt, totalEnt, outcomes){
   bestGain<- 0
   bestFeat <- NULL
+  idx <- which(colnames(training) == "Class")
   for(i in (idx + 1) : length(training)){
     c <- select(training, i:i)
     n <- colnames(c)
@@ -78,11 +79,12 @@ infoGain <- function(training, dEnt, totalEnt, idx, outcomes){
 #training :: dataset
 #idx      :: index of column to begin evaluating from
 # outcomes:: vector of unique classes (e.g. ("Yes", "No"))
-giniIndex <- function(training, idx, outcomes){
+giniIndex <- function(training, outcomes){
   bestGiniScore <- Inf
   bestGiniName <- NULL
   lowestFeatScore <- Inf
   lowestFeatName <- NULL
+  idx <- which(colnames(training) == "Class")
   for(i in (idx + 1) : length(training)){
     c <- select(training, i:i)
     n <- colnames(c)
@@ -136,7 +138,7 @@ treeBuilder <-function(pVal, node, d, depth){
     # (infoGain() calls infoG() on all remaining cols after Class)
     # splitChoice is a list: (infoGainVal, "feature col name")
     if (USEINFOGAIN == TRUE){
-      splitChoice <- infoGain(d, dEnt, totalEnt, idx, outcomes)
+      splitChoice <- infoGain(d, dEnt, totalEnt,outcomes)
       #infoGain will now split on all values of the features here, so the split may be non-binary
       #(more than 2 children).
       firstSplitIdx <- which(colnames(d) == splitChoice[2])
@@ -159,7 +161,8 @@ treeBuilder <-function(pVal, node, d, depth){
       # gini index. run on all features and find the lowest val == best column to split on.
       # splitChoice is a list: 
       # (bestcolginiIndexVal, "best feature col name", best subfeature score, "Subfeature Name")
-      splitChoice <- giniIndex(d, idx, outcomes)
+      
+      splitChoice <- giniIndex(d, outcomes)
       #is this split significant? 
       
       
@@ -185,6 +188,8 @@ treeBuilder <-function(pVal, node, d, depth){
       
       #mark these as children of the current node and recurse on both, increasing depth and using limited dataset
       node@children <- c(l, r)
+      treeBuilder(pVal, l, d, depth + 1)
+      treeBuilder(pVal, r, d, depth + 1)
       
       #else create a leaf with consensus val and return
     }
