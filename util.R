@@ -1,5 +1,5 @@
 #Elizabeth E. Esterly
-#Last revision 09/22/2017
+#Last revision 09/24/2017
 #util.R
 #function library script
 
@@ -124,14 +124,63 @@ giniIndex <- function(training, idx, outcomes){
 ##################treeBuilder################
 #pVal               ::critical value for split stopping
 
-treeBuilder <-function(pVal, copiedTraining){
-  if((chiSquare() < pVal) | length(unique(copiedTraining$Class)) == 1) {
-    
-    return(makeLeaf(copiedTraining$Class))
+treeBuilder <-function(pVal, node, d, depth){
+  #first check to see if all Class vals are the same--then we're at a leaf and we're done
+  if(length(unique(copiedTraining$Class)) == 1) {
+    l <- new("leaf", consenVal <- consen(d, d$Class))
+    return()
   }else{
     
+    # choose the split by infogain (higher val is better) or gini index (lower val is better)
+    #----------------------------------------------------------------
+    # (infoGain() calls infoG() on all remaining cols after Class)
+    # splitChoice is a list: (infoGainVal, "feature col name")
+    if (USEINFOGAIN == TRUE){
+      splitChoice <- infoGain(d, dEnt, totalEnt, idx, outcomes)
+      #infoGain will now split on all values of the features here, so the split may be non-binary
+      #(more than 2 children).
+      firstSplitIdx <- which(colnames(d) == splitChoice[2])
+      #is this split significant? 
+      
+      
+      #!!!!!!!!!!!!!!!!!!------------- Call Chi-squared----------------!!!!!!!!!!!!!!!!!!!!!!
+      
+      
+      
+      #if it is,
+      #grab unique vals from col given in list, 
+      #partition data and create nodes; 
+      #recurse on those nodes
+      
+      
+      #else create a leaf with consensus val and return
+      
+    }else{
+      # gini index. run on all features and find the lowest val == best column to split on.
+      # splitChoice is a list: 
+      # (bestcolginiIndexVal, "best feature col name", best subfeature score, "Subfeature Name")
+      splitChoice <- giniIndex(d, idx, outcomes)
+      #is this split significant? 
+      
+      
+      #!!!!!!!!!!!!!!!!!!------------- Call Chi-squared----------------!!!!!!!!!!!!!!!!!!!!!!
+      
+      
+      #if it is,
+      #GINI will implement a binary split partitioning the best scored subfeature value from the remaining values 
+      # i.e. in weather book example, first split would partition 1) OVERCAST // 2) SUNNY, RAIN
+      #get parent column to split on
+      getCol <- d %>% select(splitChoice[2])
+      #now split on features; have to pipe in the column so it doesn't string match instead of element matching
+      left <- getCol %>% filter(getCol == splitChoice[4])
+      l <- new("node", children <- NULL)
+      right <- getCol %>% filter(getCol != splitChoice[4])
+      r <- new("node", children <- NULL)
+      #mark these as children of the current node and recurse on both, increasing depth and using limited dataset
+      
+      #else create a leaf with consensus val and return
+    }
   }
-
 }
 
 #############consen######################
@@ -139,8 +188,9 @@ treeBuilder <-function(pVal, copiedTraining){
 #data            :: the general data
 #col             :: a column of that data
 consen <- function(data, Class){
-  ##don't forget about that nested tibble indexing her, i.e.:
+  ##don't forget about that nested tibble indexing here, i.e.:
   ###> b[[1]]
   #>>>>>"Yes"
-  return(subset(count(data, Class), Class == max(Class)))
+  b <- subset(count(data, Class), Class == max(Class))
+  return(b[[1]])
 }
