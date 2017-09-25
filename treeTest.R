@@ -6,6 +6,7 @@ library(tidyverse)
 source("util.R")
 source("classes.R")
 
+
 #IF FALSE THEN GINI INDEX WILL BE USED
 USEINFOGAIN <- FALSE
 
@@ -22,11 +23,13 @@ dEnt <- datasetEntropy(training$Class, outcomes, totalEntries)
 copiedTraining <- training
 
 #make root node 
-root <- new("Root", children <- c("empty"))
-f <- new("Node", name <- "f", children <- c("empty"))
-g <- new("Node", name <- "g", children <- c("empty"))
-root@children <- c(f,g)
-print(root@children)
+r <- new("root")
+f <- new("node")
+g <- new("node")
+r@children <- c(f,g)
+print(r@children)
+f@name <- "f this"
+print(f@name)
 
 #----------------begin recursive tree-builder function
 #tree = treeBuilder(pVal, root, copiedTraining, 1)

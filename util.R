@@ -171,12 +171,20 @@ treeBuilder <-function(pVal, node, d, depth){
       # i.e. in weather book example, first split would partition 1) OVERCAST // 2) SUNNY, RAIN
       #get parent column to split on
       getCol <- d %>% select(splitChoice[2])
+      
       #now split on features; have to pipe in the column so it doesn't string match instead of element matching
+      #left will always be the split chosen by GINI
       left <- getCol %>% filter(getCol == splitChoice[4])
-      l <- new("node", children <- NULL)
+      l <- new("node")
+      l@name <- paste(splitChoice[2], splitChoice[4], sep = " ")
+      
+      #right is the other features lumped together
       right <- getCol %>% filter(getCol != splitChoice[4])
-      r <- new("node", children <- NULL)
+      r <- new("node")
+      r@name <- paste(splitChoice[2], "not", splitChoice[4], sep = " ")
+      
       #mark these as children of the current node and recurse on both, increasing depth and using limited dataset
+      node@children <- c(l, r)
       
       #else create a leaf with consensus val and return
     }
