@@ -1,8 +1,9 @@
-#Elizabeth E. Esterly
-#Last revision 09/24/2017
+#Elizabeth E. Esterly, Danny Byrd
+#Last revision 09/25/2017
 #treeTest.R
 
 library(tidyverse)
+require(tidyverse)
 source("util.R")
 source("classes.R")
 
@@ -23,11 +24,8 @@ dEnt <- datasetEntropy(training$Class, outcomes, totalEntries)
 #copy the training data as a backup as we will start to do a ton of operations on it
 copiedTraining <- training
 
-#make root node 
-r <- new("root")
-
 #----------------begin recursive tree-builder function
-tree = treeBuilder(PVAL, root, copiedTraining, 1)
+tree = buildTree(PVAL, copiedTraining, 1)
 print(tree)
 
 

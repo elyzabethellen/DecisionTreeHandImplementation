@@ -29,12 +29,6 @@ def entropy(values):
 	for value in values:
 		result = result - (value/totalSize) * math.log((value/totalSize),2)
 	return result
-	
-	reads = csv.DictReader(csvFile)
-	reads.seek(0)
-	print("WHAT!!?",reads)
-	for row in reads:
-		print(reads)
 
 def informationGain(value,predictOn,data):
 	baseGain = getGAIN(rowData,value)
