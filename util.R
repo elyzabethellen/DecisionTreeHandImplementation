@@ -1,12 +1,54 @@
-#Elizabeth E. Esterly
+#Elizabeth E. Esterly, Danny Byrd
 #Last revision 09/24/2017
 #util.R
 #function library script
 
+
+##########chiSquaredTest#######
+# self contained chi squared test to check if a split on a dataset is statistically signifcant 
+#data = data set (or subset) to test
+#splitAttribute :: (the attribute to test)
+#predictionAttribute :: (the attribute which is being predicted) 
+#confidenceLevel :: lower bound on the probability of statistical significance for the chi squared statistic 
+
+chiSquaredTest <- function(data,splitAttribute,predictionAttribute,confidenceLevel){
+
+  uniqueSplitValues <- unique(data[splitAttribute])
+  uniqueAttributeValues <- unique(data[predictionAttribute])
+
+  splitAttributeCategories <- length(unique(data[splitAttribute])[[1]])
+  predictionAttributeCategories <- length(unique(data[predictionAttribute])[[1]])
+
+  degreesFreedom <- (splitAttributeCategories - 1) * (predictionAttributeCategories - 1)
+
+  totalSubsetLength = length(data[[1]])
+
+  chiSquared <- 0
+
+  for (attributeV in uniqueSplitValues[[1]]) {    
+      for (predictionV in uniqueAttributeValues[[1]]) {
+
+        av <- sum(data[splitAttribute] == attributeV)
+        pv <- sum(data[predictionAttribute] == predictionV)
+        expectedValue <- av * pv / totalSubsetLength  
+        realValue <- sum(data[splitAttribute] == attributeV & data[predictionAttribute] == predictionV)        
+        chiSquared <- chiSquared + ((realValue - expectedValue)^2)/expectedValue
+      
+      }
+  }
+
+  
+  if(qchisq(confidenceLevel, df=degreesFreedom)<chiSquared){
+    return (TRUE)
+  }
+
+  return (FALSE)
+
+}
+
 ##########datasetEntropy#######
 #returns entropy s of dataset column vector d
 #d    :: dataset
-
 datasetEntropy <- function(d, outcomes, totalEntries){
   categories <- length(outcomes)
   
@@ -151,7 +193,7 @@ treeBuilder <-function(pVal, n, d, depth){
       
       
       #!!!!!!!!!!!!!!!!!!------------- Call Chi-squared----------------!!!!!!!!!!!!!!!!!!!!!!
-      
+      print("HEY DUDEEEE")
       
       
       #if it is,
