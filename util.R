@@ -170,23 +170,24 @@ giniIndex <- function(d, outcomes){
 #wrapper for treeBuilder()
 buildTree <- function(pVal, d, depth){
   #make root node 
-  root <- Node$new("ROOT")
-  r <- treeBuilder(pVal, root, d, depth)
-  return(r)
+  root <- new("root")
+  treeBuilder(pVal, root, d, depth)
+  print(root)
+  return(root)
 }
 
 ##################treeBuilder################
 #pVal               ::critical value for split stopping
 
 treeBuilder <-function(pVal, n, d, depth){
-  cat("depth ", depth, "\n")
+  cat("In treeBuilder at depth ", depth, "\n")
   #first check to see if all Class vals are the same--then we're at a leaf and we're done
   testData <- d["Class"]
   if(length(unique(testData[[1]])) == 1) {
-    consenVal <- consen(d, testData)
-    l <- n$AddChild(consenVal)
-    print(n)
-    return(n)
+    l <- new("leaf")
+    l@consenVal <- list(consen(d, testData))
+    forceByReference(n@children, list(l))
+    return()
   }else{
     
     # choose the split by infogain (higher val is better) or gini index (lower val is better)
@@ -235,16 +236,19 @@ treeBuilder <-function(pVal, n, d, depth){
       #now split on features; have to pipe in the column so it doesn't string match instead of element matching
       #left will always be the split chosen by GINI
       left <- d %>% filter(getCol == splitChoice[4])
-      name <- paste(splitChoice[2], splitChoice[4], sep = " ")
-      l <- n$AddChild(name)
+      l <- new("node")
+      l@name <- paste(splitChoice[2], splitChoice[4], sep = " ")
 
+   
       #right is the other features lumped together
       right <- d %>% filter(getCol != splitChoice[4])
-      name <- paste(splitChoice[2], "not", splitChoice[4], sep = " ")
-      r <- n$AddChild(name)
+      r <- new("node")
+      r@name <- paste(splitChoice[2], "not", splitChoice[4], sep = " ")
+
       
-      print(n)
       #mark these as children of the current node and recurse on both, increasing depth and using limited dataset
+      forceByReference(n@children, c(l, r))
+      #cat("The Gini children are created at depth ", depth, "\n")
       treeBuilder(pVal, l, left, depth + 1)
       treeBuilder(pVal, r, right, depth + 1)
       
@@ -264,3 +268,11 @@ consen <- function(data, Class){
   b <- subset(count(data, Class), Class == max(Class))
   return(b[[1]])
 }
+
+############forceByReference#############
+#R doesn't pass by reference. Let's make it.
+forceByReference <- function(x, value){
+  eval.parent(substitute(x <- value))
+}
+
+

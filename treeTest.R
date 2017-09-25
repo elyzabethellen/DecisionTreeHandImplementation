@@ -4,9 +4,8 @@
 
 library(tidyverse)
 require(tidyverse)
-library(data.tree)
-require(data.tree)
 source("util.R")
+source("classes.R")
 
 #THESE WILL COME IN IN SCRIPT
 #IF FALSE THEN GINI INDEX WILL BE USED
