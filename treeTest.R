@@ -22,7 +22,11 @@ dEnt <- datasetEntropy(training$Class, outcomes, totalEntries)
 copiedTraining <- training
 
 #make root node 
-root <- new("root", children <- NULL)
+root <- new("Root", children <- c("empty"))
+f <- new("Node", name <- "f", children <- c("empty"))
+g <- new("Node", name <- "g", children <- c("empty"))
+root@children <- c(f,g)
+print(root@children)
 
 #----------------begin recursive tree-builder function
 #tree = treeBuilder(pVal, root, copiedTraining, 1)

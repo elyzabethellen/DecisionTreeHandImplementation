@@ -140,7 +140,13 @@ treeBuilder <-function(pVal, node, d, depth){
       #infoGain will now split on all values of the features here, so the split may be non-binary
       #(more than 2 children).
       firstSplitIdx <- which(colnames(d) == splitChoice[2])
-      #is this split significant? -------------Chi-squared----------------
+      #is this split significant? 
+      
+      
+      #!!!!!!!!!!!!!!!!!!------------- Call Chi-squared----------------!!!!!!!!!!!!!!!!!!!!!!
+      
+      
+      
       #if it is,
       #grab unique vals from col given in list, 
       #partition data and create nodes; 
@@ -154,7 +160,12 @@ treeBuilder <-function(pVal, node, d, depth){
       # splitChoice is a list: 
       # (bestcolginiIndexVal, "best feature col name", best subfeature score, "Subfeature Name")
       splitChoice <- giniIndex(d, idx, outcomes)
-      #is this split significant? -------------Chi-squared----------------
+      #is this split significant? 
+      
+      
+      #!!!!!!!!!!!!!!!!!!------------- Call Chi-squared----------------!!!!!!!!!!!!!!!!!!!!!!
+      
+      
       #if it is,
       #GINI will implement a binary split partitioning the best scored subfeature value from the remaining values 
       # i.e. in weather book example, first split would partition 1) OVERCAST // 2) SUNNY, RAIN
@@ -162,7 +173,9 @@ treeBuilder <-function(pVal, node, d, depth){
       getCol <- d %>% select(splitChoice[2])
       #now split on features; have to pipe in the column so it doesn't string match instead of element matching
       left <- getCol %>% filter(getCol == splitChoice[4])
+      l <- new("node", children <- NULL)
       right <- getCol %>% filter(getCol != splitChoice[4])
+      r <- new("node", children <- NULL)
       #mark these as children of the current node and recurse on both, increasing depth and using limited dataset
       
       #else create a leaf with consensus val and return

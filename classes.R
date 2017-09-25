@@ -1,28 +1,29 @@
 #class file
 
-Root <- setClass(
-  "root", 
-  representation =list(
+setClass(
+  "Root", 
+  representation(
     children = "list"
     ),
-  contains = "NULL"
+  contains = c("NULL", "character")
 )
 
 #setting parent to list type for easiness even though it's a single object, it could be a root or a node
-Node <- setClass(
-  "node",  
-  representation = list(
+setClass(
+  "Node",  
+  representation(
+    name = "character",
     children = "list"
   ),
-  contains = "NULL"
+  contains = c("NULL", "character")
 )
 
 #setting parent and consenVal to list type for easiness even though it's a single object, 
 #it could be a root or a node in parent case or numeric, char, anything in consenVal case
-Leaf <- setClass(
-  "leaf", 
-  representation = list( 
+setClass(
+  "Leaf", 
+  representation( 
       consenVal = "list"
       ),
-  contains = "NULL"
+  contains = c("NULL", "character")
   )
