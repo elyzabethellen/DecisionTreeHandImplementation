@@ -36,14 +36,6 @@ def entropy(values):
 	for row in reads:
 		print(reads)
 
-attribute = "Class"
-count = 0
-rowData = []
-with open('weatherTraining.csv') as csvfile:
-	reader = csv.DictReader(csvfile)	
-	for row in reader:
-		rowData.append(row)
-
 def informationGain(value,predictOn,data):
 	baseGain = getGAIN(rowData,value)
 	totalGain = getGAIN(rowData,predictOn)
@@ -54,10 +46,6 @@ def informationGain(value,predictOn,data):
 		ig = ig - prob * entropy(getClassGAIN(data,value,key,predictOn).values())
 
 	return ig
-
-
-
-predictor = "Class"
 
 def splitData(data,attribute):
 	d = {} 
@@ -76,45 +64,17 @@ def getValues(data,attribute):
 
 	return dictionary.keys()
 
-
-class node:
-	children = []
-	attribute = ""
-
-	def __init__(self,attribute):
-		self.attribute = attribute
-		self.children = []
-
-	def classify(self,data):
-		return "IE"
-
-	def addChild(self,attribute):
-		self.children.append(node(attribute))
-
-	def travel(self):
-		for c in self.children:
-			c.eprint()
-
-	def eprint(self,stringBuffer):
-		print(stringBuffer,self.attribute)
-		for c in self.children:
-			c.eprint(stringBuffer+" -")
-		#print(self.attribute)
-		#self.travel()
-
-
-def getBestGain(data,attributes):
+def getBestGain(data,attributes,target):
 	ig = []
 	keys = []
 	for key in attributes:
 		keys.append(key)
-		ig.append(informationGain(key,predictor,data)) # create X new subsets based on the highest split ... recurisvely do this, this splits are of size 1 
+		ig.append(informationGain(key,target,data)) # create X new subsets based on the highest split ... recurisvely do this, this splits are of size 1 
 			#print(key,informationGain(key,"Class",rowData))
 
 	#print(sorted(zip(ig, keys), reverse=True))
 	newAttribute = sorted(zip(ig, keys), reverse=True)
 	return newAttribute[0]
-
 
 def mostCommonValue(dataset,attribute):
 	dataResult = splitData(dataset,attribute)
@@ -126,7 +86,85 @@ def mostCommonValue(dataset,attribute):
 			maxLength = len(dataResult[key]) 
 	return maxKey
 
+def bID3(examples,TA,attributes,whitelist):
+	# examples ... training examples
+	# target attribute... value to be predicted
+	# attributes to be tested 
+	for i in whitelist:
+		if i in attributes:
+			attributes.remove(i)
+	
+	treeRoot = TNode()
+	#treeRoot.setValue(mostCommonValue(examples,TA))
+	#all examples are the same...so roll with it 
 
+	mostCommonTarget = mostCommonValue(examples,TA)
+	treeRoot.setCommonValue(mostCommonTarget)
+
+	if getValues(examples,TA) == 1:		
+		treeRoot.setLabel(mostCommonTarget)
+		return treeRoot
+
+	if len(attributes) == 0:
+		treeRoot.setLabel(mostCommonTarget)
+		return treeRoot
+
+	gainAttribute = getBestGain(examples,attributes,TA)[1]
+	attributes.remove(gainAttribute)
+
+	branchValues = getValues(examples,gainAttribute)
+	dataSplit = splitData(copy.deepcopy(examples),gainAttribute)
+
+	for key in dataSplit.keys():
+		if len(dataSplit[key]) == 0:
+			treeRoot.setDecisionAttribute(gainAttribute)
+			newNode = TNode()
+			newNode.setLabel(mostCommonValue(examples,TA))
+			treeRoot.addChild(key,newNode)
+		else:
+			treeRoot.setDecisionAttribute(gainAttribute)			
+			newNode = bID3(dataSplit[key],TA,copy.copy(attributes),whitelist)
+			treeRoot.addChild(key,newNode)			
+
+	# if all the examples are positive... 
+	# if there are no more attributes... 
+	
+	return treeRoot
+
+def createValidationTestSet(data):
+	dataset = copy.deepcopy(data) 
+	random.shuffle(dataset)	
+	train_data = copy.deepcopy(dataset[:len(dataset)/2])
+	test_data = copy.deepcopy(dataset[len(dataset)/2:])
+	return {
+		"train":train_data,
+		"test":test_data
+	}
+
+def crossValidate(rounds,data,predictionClass):
+	results = []
+	for i in range(0,rounds):
+		dataSplit = createValidationTestSet(data)
+		#for key in dataSplit:
+		#	print(key,dataSplit[key])	
+
+		print(len(dataSplit['train']))
+		tree = bID3(dataSplit['train'],predictionClass,dataSplit['train'][0].keys(),["id","Class"]) #train the model
+		for item in dataSplit['test']:
+			item["guess"] = tree.classify(item)
+
+		wrong = 0
+		correct = 0
+		total = len(dataSplit['test'])
+		for item in dataSplit['test']:
+			if item['guess'] == item[predictionClass]:
+				correct+=1 
+			else:
+				wrong+=1 
+		setResult = float(correct)/float(total)
+		results.append(setResult)
+		dataSplit = {}
+	return sum(results) / float(len(results)) 
 
 class TNode:
 	attribute = ""
@@ -170,90 +208,18 @@ class TNode:
 	def addChild(self,key,child):
 		self.children[key] = child
 
-def bID3(examples,TA,attributes,whitelist):
-	# examples ... training examples
-	# target attribute... value to be predicted
-	# attributes to be tested 
-	for i in whitelist:
-		if i in attributes:
-			attributes.remove(i)
-	
-	treeRoot = TNode()
-	#treeRoot.setValue(mostCommonValue(examples,TA))
-	#all examples are the same...so roll with it 
-
-	mostCommonTarget = mostCommonValue(examples,TA)
-	treeRoot.setCommonValue(mostCommonTarget)
-
-	if getValues(examples,TA) == 1:		
-		treeRoot.setLabel(mostCommonTarget)
-		return treeRoot
-
-	if len(attributes) == 0:
-		treeRoot.setLabel(mostCommonTarget)
-		return treeRoot
-
-	gainAttribute = getBestGain(examples,attributes)[1]
-	attributes.remove(gainAttribute)
-
-	branchValues = getValues(examples,gainAttribute)
-	dataSplit = splitData(copy.deepcopy(examples),gainAttribute)
-
-	for key in dataSplit.keys():
-		if len(dataSplit[key]) == 0:
-			treeRoot.setDecisionAttribute(gainAttribute)
-			newNode = TNode()
-			newNode.setLabel(mostCommonValue(examples,TA))
-			treeRoot.addChild(key,newNode)
-		else:
-			treeRoot.setDecisionAttribute(gainAttribute)			
-			newNode = bID3(dataSplit[key],TA,copy.copy(attributes),whitelist)
-			treeRoot.addChild(key,newNode)			
-
-	# if all the examples are positive... 
-	# if there are no more attributes... 
-	
-	return treeRoot
-
-def createValidationTestSet(data):
-	dataset = copy.deepcopy(data) 
-	random.shuffle(dataset)	
-	train_data = copy.deepcopy(dataset[:len(dataset)/2])
-	test_data = copy.deepcopy(dataset[len(dataset)/2:])
-	return {
-		"train":train_data,
-		"test":test_data
-	}
-
-
-def crossValidate(rounds,data,predictionClass):
-	results = []
-	for i in range(0,rounds):
-		dataSplit = createValidationTestSet(data)
-		#for key in dataSplit:
-		#	print(key,dataSplit[key])	
-
-		print(len(dataSplit['train']))
-		tree = bID3(dataSplit['train'],predictionClass,dataSplit['train'][0].keys(),["id","Class"]) #train the model
-		for item in dataSplit['test']:
-			item["guess"] = tree.classify(item)
-
-		wrong = 0
-		correct = 0
-		total = len(dataSplit['test'])
-		for item in dataSplit['test']:
-			if item['guess'] == item[predictionClass]:
-				correct+=1 
-			else:
-				wrong+=1 
-		setResult = float(correct)/float(total)
-		results.append(setResult)
-		dataSplit = {}
-	return sum(results) / float(len(results)) 
+count = 0
+rowData = []
+attribute = "Class"
+with open('weatherTraining.csv') as csvfile:
+	reader = csv.DictReader(csvfile)	
+	for row in reader:
+		rowData.append(row)
 
 #print("VALIDATION SCORE",crossValidate(1,rowData,"Class")) 
 #datas = createValidationTestSet(rowData)
-tree = bID3(rowData,"Class",rowData[0].keys(),["id","Class"]) #train the model
+
+tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the model
 print(tree.attribute)
 print(tree.classify(rowData[1]))
 print(tree.children)
