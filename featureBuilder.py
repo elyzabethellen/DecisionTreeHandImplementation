@@ -1,8 +1,23 @@
 import csv
 import collections
 import sys
+import random
+
+
 
 rowData = []
+
+def fixDNACharacter(character):
+    if character == "D":
+        return random.choice(["A","G","T"])
+    if character == "N":
+        return random.choice(["C","A","G","T"])
+    if character == "S":    
+        return random.choice(["C","G"])
+    if character == "R":
+        return random.choice(["A","G"])
+    
+    return character    
 
 def occurrences(string, sub):
     count = start = 0
@@ -113,8 +128,8 @@ if len(sys.argv) > 2:
 
 
             counter = 0
-            for letter in dna:               
-                newRow[str(counter)] = dna[counter]
+            for letter in dna:        
+                newRow[str(counter)] = fixDNACharacter(dna[counter])
                 counter = counter + 1 
 
             newKeys = newRow.keys(); 
