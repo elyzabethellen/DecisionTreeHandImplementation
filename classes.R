@@ -15,5 +15,5 @@ node <- setClass(
 #it could be a root or a node in parent case or numeric, char, anything in consenVal case
 leaf <- setClass(
   "leaf", 
-  c = (consenVal = "list")
+  slots = c(consenVal = "list")
   )
