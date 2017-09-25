@@ -79,14 +79,14 @@ infoGain <- function(training, dEnt, totalEnt, outcomes){
 #training :: dataset
 #idx      :: index of column to begin evaluating from
 # outcomes:: vector of unique classes (e.g. ("Yes", "No"))
-giniIndex <- function(training, outcomes){
+giniIndex <- function(d, outcomes){
   bestGiniScore <- Inf
   bestGiniName <- NULL
   lowestFeatScore <- Inf
   lowestFeatName <- NULL
-  idx <- which(colnames(training) == "Class")
-  for(i in (idx + 1) : length(training)){
-    c <- select(training, i:i)
+  idx <- which(colnames(d) == "Class")
+  for(i in (idx + 1) : length(d)){
+    c <- select(d, i:i)
     n <- colnames(c)
     
     #get unique feature values for this column
@@ -103,7 +103,7 @@ giniIndex <- function(training, outcomes){
       #eval Gini index and store name if it's the best
       for (j in 1: length(outcomes)){
                    #how many match a certain outcome?
-        g <- g - ((sum(c == uniques[u] & training$Class == outcomes[j])) / t) ^ 2
+        g <- g - ((sum(c == uniques[u] & d$Class == outcomes[j])) / t) ^ 2
       }
       g <- g * (t / l) 
       # store ind scores here too to return for the split.
@@ -126,10 +126,14 @@ giniIndex <- function(training, outcomes){
 ##################treeBuilder################
 #pVal               ::critical value for split stopping
 
-treeBuilder <-function(pVal, node, d, depth){
+treeBuilder <-function(pVal, n, d, depth){
+  cat("In treeBuilder at depth ", depth)
   #first check to see if all Class vals are the same--then we're at a leaf and we're done
-  if(length(unique(copiedTraining$Class)) == 1) {
-    l <- new("leaf", consenVal <- consen(d, d$Class))
+  testData <- d["Class"]
+  if(length(unique(testData[[1]])) == 1) {
+    print("Just one Class remains...sending up a leaf")
+    l <- new("leaf")
+    l@consenVal <- list(consen(d, testData))
     return()
   }else{
     
@@ -138,6 +142,7 @@ treeBuilder <-function(pVal, node, d, depth){
     # (infoGain() calls infoG() on all remaining cols after Class)
     # splitChoice is a list: (infoGainVal, "feature col name")
     if (USEINFOGAIN == TRUE){
+      print("info gain used")
       splitChoice <- infoGain(d, dEnt, totalEnt,outcomes)
       #infoGain will now split on all values of the features here, so the split may be non-binary
       #(more than 2 children).
@@ -161,8 +166,9 @@ treeBuilder <-function(pVal, node, d, depth){
       # gini index. run on all features and find the lowest val == best column to split on.
       # splitChoice is a list: 
       # (bestcolginiIndexVal, "best feature col name", best subfeature score, "Subfeature Name")
-      
+      print("Gini index used")
       splitChoice <- giniIndex(d, outcomes)
+      cat("splitChoice value is ", splitChoice[4])
       #is this split significant? 
       
       
@@ -178,18 +184,24 @@ treeBuilder <-function(pVal, node, d, depth){
       #now split on features; have to pipe in the column so it doesn't string match instead of element matching
       #left will always be the split chosen by GINI
       left <- getCol %>% filter(getCol == splitChoice[4])
+      #^^^^^^^^^^^^^^^^paste corresponding class vals on here too
+      
       l <- new("node")
       l@name <- paste(splitChoice[2], splitChoice[4], sep = " ")
       
       #right is the other features lumped together
       right <- getCol %>% filter(getCol != splitChoice[4])
+      #^^^^^^^^^^^^^^^^paste corresponding class vals on here too
+      
       r <- new("node")
       r@name <- paste(splitChoice[2], "not", splitChoice[4], sep = " ")
       
       #mark these as children of the current node and recurse on both, increasing depth and using limited dataset
-      node@children <- c(l, r)
-      treeBuilder(pVal, l, d, depth + 1)
-      treeBuilder(pVal, r, d, depth + 1)
+      #can't do this by reference--work it out later
+      #n@children <- c(l, r)
+      cat("The Gini children are created at depth ", depth)
+      treeBuilder(pVal, l, left, depth + 1)
+      treeBuilder(pVal, r, right, depth + 1)
       
       #else create a leaf with consensus val and return
     }
@@ -204,6 +216,7 @@ consen <- function(data, Class){
   ##don't forget about that nested tibble indexing here, i.e.:
   ###> b[[1]]
   #>>>>>"Yes"
+  print("consen function--leaf found")
   b <- subset(count(data, Class), Class == max(Class))
   return(b[[1]])
 }
