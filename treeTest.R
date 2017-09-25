@@ -28,7 +28,7 @@ r <- new("root")
 
 #----------------begin recursive tree-builder function
 tree = treeBuilder(PVAL, root, copiedTraining, 1)
-#print(tree)
+print(tree)
 
 
 
