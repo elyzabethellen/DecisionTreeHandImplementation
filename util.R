@@ -1,5 +1,5 @@
 #Elizabeth E. Esterly, Danny Byrd
-#Last revision 09/24/2017
+#Last revision 09/25/2017
 #util.R
 #function library script
 
@@ -165,18 +165,28 @@ giniIndex <- function(d, outcomes){
   return(c(bestGiniScore, bestGiniName, lowestFeatScore, lowestFeatName))
 }
 
+
+##################buildTree######################
+#wrapper for treeBuilder()
+buildTree <- function(pVal, d, depth){
+  #make root node 
+  root <- Node$new("ROOT")
+  r <- treeBuilder(pVal, root, d, depth)
+  return(r)
+}
+
 ##################treeBuilder################
 #pVal               ::critical value for split stopping
 
 treeBuilder <-function(pVal, n, d, depth){
-  cat("In treeBuilder at depth ", depth)
+  cat("depth ", depth, "\n")
   #first check to see if all Class vals are the same--then we're at a leaf and we're done
   testData <- d["Class"]
   if(length(unique(testData[[1]])) == 1) {
-    print("Just one Class remains...sending up a leaf")
-    l <- new("leaf")
-    l@consenVal <- list(consen(d, testData))
-    return()
+    consenVal <- consen(d, testData)
+    l <- n$AddChild(consenVal)
+    print(n)
+    return(n)
   }else{
     
     # choose the split by infogain (higher val is better) or gini index (lower val is better)
@@ -184,7 +194,7 @@ treeBuilder <-function(pVal, n, d, depth){
     # (infoGain() calls infoG() on all remaining cols after Class)
     # splitChoice is a list: (infoGainVal, "feature col name")
     if (USEINFOGAIN == TRUE){
-      print("info gain used")
+      #print("info gain used")
       splitChoice <- infoGain(d, dEnt, totalEnt,outcomes)
       #infoGain will now split on all values of the features here, so the split may be non-binary
       #(more than 2 children).
@@ -193,7 +203,7 @@ treeBuilder <-function(pVal, n, d, depth){
       
       
       #!!!!!!!!!!!!!!!!!!------------- Call Chi-squared----------------!!!!!!!!!!!!!!!!!!!!!!
-      print("HEY DUDEEEE")
+     # print("HEY DUDEEEE")
       
       
       #if it is,
@@ -208,43 +218,33 @@ treeBuilder <-function(pVal, n, d, depth){
       # gini index. run on all features and find the lowest val == best column to split on.
       # splitChoice is a list: 
       # (bestcolginiIndexVal, "best feature col name", best subfeature score, "Subfeature Name")
-      print("Gini index used")
+      #print("Gini index used")
       splitChoice <- giniIndex(d, outcomes)
-      cat("splitChoice value is ", splitChoice[4], "\n")
+      #cat("splitChoice value is ", splitChoice[4], "\n")
       #is this split significant? 
-      
-      
       #!!!!!!!!!!!!!!!!!!------------- Call Chi-squared----------------!!!!!!!!!!!!!!!!!!!!!!
       
       
       #if it is,
+      
       #GINI will implement a binary split partitioning the best scored subfeature value from the remaining values 
       # i.e. in weather book example, first split would partition 1) OVERCAST // 2) SUNNY, RAIN
       #get parent column to split on
       getCol <- d %>% select(splitChoice[2])
+      
       #now split on features; have to pipe in the column so it doesn't string match instead of element matching
       #left will always be the split chosen by GINI
       left <- d %>% filter(getCol == splitChoice[4])
-      print("LEFT!")
-      print(left)
-      
-      
-      l <- new("node")
-      l@name <- paste(splitChoice[2], splitChoice[4], sep = " ")
-      
+      name <- paste(splitChoice[2], splitChoice[4], sep = " ")
+      l <- n$AddChild(name)
+
       #right is the other features lumped together
       right <- d %>% filter(getCol != splitChoice[4])
-      print("RIGHT!")
-      print(right)
+      name <- paste(splitChoice[2], "not", splitChoice[4], sep = " ")
+      r <- n$AddChild(name)
       
-      
-      r <- new("node")
-      r@name <- paste(splitChoice[2], "not", splitChoice[4], sep = " ")
-      
+      print(n)
       #mark these as children of the current node and recurse on both, increasing depth and using limited dataset
-      #can't do this by reference--work it out later
-      #n@children <- c(l, r)
-      cat("The Gini children are created at depth ", depth, "\n")
       treeBuilder(pVal, l, left, depth + 1)
       treeBuilder(pVal, r, right, depth + 1)
       
@@ -261,7 +261,6 @@ consen <- function(data, Class){
   ##don't forget about that nested tibble indexing here, i.e.:
   ###> b[[1]]
   #>>>>>"Yes"
-  print("consen function--leaf found")
   b <- subset(count(data, Class), Class == max(Class))
   return(b[[1]])
 }
