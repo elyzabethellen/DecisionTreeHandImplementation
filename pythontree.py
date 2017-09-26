@@ -98,6 +98,7 @@ def getBestGain(data,attributes,target):
 #returns the GINI for a single column split
 #to giniIndex for comparison against other column scores
 def giniIndex(data, attribute):
+	#getGain gives us attribute counts
 	x = getGAIN(data, attribute)
 	print x
 	#do the calculations
@@ -107,11 +108,12 @@ def giniIndex(data, attribute):
 #data: the dataset to process
 #lower GiniGain val is better with 0 being ideal
 #returns a list (Gini value, Attribute)
-def getBestGiniGain(data, blacklist):
+def getBestGiniGain(data):
+	baseScore = float('inf')
 	k = rowData[0].keys()
 	blacklist = ['Class', 'id', 'DNA']
-	k = [x for x in k if x in blacklist]
-	print k
+	#list comprehension gives us feature columns only
+	k = [x for x in k if x not in blacklist]
 	for i in range(0, len(k)):
 		attributeScore = giniIndex(data, k[i])
 	return
@@ -352,3 +354,4 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 
 #########
 #testing Gini stuff here
+getBestGiniGain(rowData)
