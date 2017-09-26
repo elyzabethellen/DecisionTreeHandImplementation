@@ -92,19 +92,30 @@ def getBestGain(data,attributes,target):
 	return newAttribute[0]
 
 
-def giniIndex(data):
+#######giniIndex()###########
+#data:       dataset
+#attribute : attribute/feature column
+#returns the GINI for a single column split
+#to giniIndex for comparison against other column scores
+def giniIndex(data, attribute):
+	x = getGAIN(data, attribute)
+	print x
+	#do the calculations
+	return 0
+
+#######getBestGini()#########
+#data: the dataset to process
+#lower Gini val is better with 0 being ideal
+#returns a list (Gini value, Attribute)
+def getBestGini(data):
+	giniScore = 
 	k = rowData[0].keys()
-
+	k = [x for x in k if x != 'id' and x != 'Class']
+	print k
 	for i in range(0, len(k)):
-		if k[i] != 'id' and k[i] != 'Class':
-			x = getGAIN(rowData, k[i])
-			print x
-	return 0
+		attributeScore = giniIndex(data, k[i])
+	return (Inf, Inf)
 
-
-def getBestGini():
-	#lower GINI is better
-	return 0
 
 ###### mostCommonValue ######
 # gets the most common value for an attribute in a dataset
