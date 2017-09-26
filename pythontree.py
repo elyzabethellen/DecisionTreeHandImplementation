@@ -1,6 +1,6 @@
 #Danny Byrd and Elizabeth Esterly
 #pythontree.py
-#last revision 09/25/2017
+#last revision 09/26/2017
 import cProfile, pstats, StringIO
 
 
@@ -108,7 +108,6 @@ def giniIndex(data, attribute):
 #lower Gini val is better with 0 being ideal
 #returns a list (Gini value, Attribute)
 def getBestGini(data):
-	giniScore = 
 	k = rowData[0].keys()
 	k = [x for x in k if x != 'id' and x != 'Class']
 	print k
