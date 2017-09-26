@@ -103,17 +103,18 @@ def giniIndex(data, attribute):
 	#do the calculations
 	return 0
 
-#######getBestGini()#########
+#######getBestGiniGain()#########
 #data: the dataset to process
-#lower Gini val is better with 0 being ideal
+#lower GiniGain val is better with 0 being ideal
 #returns a list (Gini value, Attribute)
-def getBestGini(data):
+def getBestGiniGain(data, blacklist):
 	k = rowData[0].keys()
-	k = [x for x in k if x != 'id' and x != 'Class']
+	blacklist = ['Class', 'id', 'DNA']
+	k = [x for x in k if x in blacklist]
 	print k
 	for i in range(0, len(k)):
 		attributeScore = giniIndex(data, k[i])
-	return (Inf, Inf)
+	return
 
 
 ###### mostCommonValue ######
@@ -145,18 +146,17 @@ def bID3(examples,TA,attributes,whitelist):
 	for i in whitelist:
 		if i in attributes:
 			attributes.remove(i)
-	
+
 	treeRoot = TNode()
 	#treeRoot.setValue(mostCommonValue(examples,TA))
-	#all examples are the same...so roll with it 
-
+	#all examples are the same...so roll with it
 
 	mostCommonTarget = mostCommonValue(examples,TA)
 	treeRoot.setCommonValue(mostCommonTarget)
 
 	#print(len(getValues(examples,TA)))
 
-	if len(getValues(examples,TA)) == 1:		
+	if len(getValues(examples,TA)) == 1:
 		treeRoot.setLabel(mostCommonTarget)
 		#print("beans")
 		return treeRoot
@@ -164,9 +164,9 @@ def bID3(examples,TA,attributes,whitelist):
 	if len(attributes) == 0:
 		treeRoot.setLabel(mostCommonTarget)
 		return treeRoot
-
-###########INSERT ARG TO DECIDE GINI OR INFO GAIN HERE
-	######################################################################
+	# [1] is the column name in the list...[0] is the score
+	#giniAttribute = getBestGiniGain(attributes)[1]
+	#attributes.remove(gainAttribute)
 	gainAttribute = getBestGain(examples,attributes,TA)[1]
 	attributes.remove(gainAttribute)
 
@@ -176,11 +176,13 @@ def bID3(examples,TA,attributes,whitelist):
 	for key in dataSplit.keys():
 		if len(dataSplit[key]) == 0:
 			treeRoot.setDecisionAttribute(gainAttribute)
+			# treeRoot.setDecisionAttribute(giniAttribute)
 			newNode = TNode()
-			newNode.setLabel(mostCommonValue(examples,TA))			
+			newNode.setLabel(mostCommonValue(examples,TA))
 			treeRoot.addChild(key,newNode)
 		else:
-			treeRoot.setDecisionAttribute(gainAttribute)			
+			treeRoot.setDecisionAttribute(gainAttribute)
+			#treeRoot.setDecisionAttribute(giniAttribute)
 			newNode = bID3(dataSplit[key],TA,copy.copy(attributes),whitelist)
 			treeRoot.addChild(key,newNode)			
 
@@ -348,3 +350,5 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 
 
 
+#########
+#testing Gini stuff here
