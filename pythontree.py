@@ -76,6 +76,7 @@ def getBestGain(data,attributes,target):
 	return newAttribute[0]
 
 def giniIndex():
+	return 0
 
 def getBestGini():
 	#lower GINI is better
@@ -233,6 +234,8 @@ print(tree.classify(rowData[1]))
 print(tree.children)
 for k in tree.children.keys():
 	print(k,tree.children[k].children)
+
+print(rowData)
 
 # this is kinda a debugger haha
 # datas = createValidationTestSet(rowData)
