@@ -107,9 +107,9 @@ def giniIndex(data, attribute):
 #data: the dataset to process
 #lower Gini val is better with 0 being ideal
 #returns a list (Gini value, Attribute)
-def getBestGini(data):
+def getBestGini(data, blacklist):
 	k = rowData[0].keys()
-	k = [x for x in k if x != 'id' and x != 'Class']
+	k = [x for x in k if x not in blacklist]
 	print k
 	for i in range(0, len(k)):
 		attributeScore = giniIndex(data, k[i])
@@ -145,7 +145,7 @@ def bID3(examples,TA,attributes,whitelist):
 	for i in whitelist:
 		if i in attributes:
 			attributes.remove(i)
-	
+
 	treeRoot = TNode()
 	#treeRoot.setValue(mostCommonValue(examples,TA))
 	#all examples are the same...so roll with it 
@@ -164,9 +164,8 @@ def bID3(examples,TA,attributes,whitelist):
 	if len(attributes) == 0:
 		treeRoot.setLabel(mostCommonTarget)
 		return treeRoot
-
-###########INSERT ARG TO DECIDE GINI OR INFO GAIN HERE
-	######################################################################
+	# [1] is the column name in the list...[0] is the score
+	#giniAttribute = getBestGini()[1]
 	gainAttribute = getBestGain(examples,attributes,TA)[1]
 	attributes.remove(gainAttribute)
 
@@ -347,4 +346,7 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 #print("Classification",tree.classify(datas['test'][1]))
 
 
+
+#########
+#testing Gini stuff here
 
