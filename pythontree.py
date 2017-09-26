@@ -1,3 +1,7 @@
+#Danny Byrd and Elizabeth Esterly
+#pythontree.py
+#last revision 09/25/2017
+
 import csv
 import math 
 import random 
@@ -41,6 +45,7 @@ def informationGain(value,predictOn,data):
 
 	return ig
 
+
 def splitData(data,attribute):
 	d = {} 
 	for key in getValues(data,attribute):
@@ -63,12 +68,19 @@ def getBestGain(data,attributes,target):
 	keys = []
 	for key in attributes:
 		keys.append(key)
-		ig.append(informationGain(key,target,data)) # create X new subsets based on the highest split ... recurisvely do this, this splits are of size 1 
+		ig.append(informationGain(key,target,data)) # create X new subsets based on the highest split ... recursively do this, this splits are of size 1
 			#print(key,informationGain(key,"Class",rowData))
 
 	#print(sorted(zip(ig, keys), reverse=True))
 	newAttribute = sorted(zip(ig, keys), reverse=True)
 	return newAttribute[0]
+
+def giniIndex():
+
+def getBestGini():
+	#lower GINI is better
+	return 0
+
 
 def mostCommonValue(dataset,attribute):
 	dataResult = splitData(dataset,attribute)
@@ -103,6 +115,8 @@ def bID3(examples,TA,attributes,whitelist):
 		treeRoot.setLabel(mostCommonTarget)
 		return treeRoot
 
+###########INSERT ARG TO DECIDE GINI OR INFO GAIN HERE
+	######################################################################
 	gainAttribute = getBestGain(examples,attributes,TA)[1]
 	attributes.remove(gainAttribute)
 
