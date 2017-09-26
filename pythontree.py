@@ -18,6 +18,11 @@ def getClassGAIN(data,attribute,attributeValue,classToPredict):
 
 	return resultSet
 
+
+########getGain()########
+# data :      the dataset
+# attribute : attribute /column name
+# returns a dictionary with attribute values = keys and counts = values.
 def getGAIN(data,attribute):
 	resultSet = {}
 	for row in data:
@@ -75,7 +80,13 @@ def getBestGain(data,attributes,target):
 	newAttribute = sorted(zip(ig, keys), reverse=True)
 	return newAttribute[0]
 
-def giniIndex():
+def giniIndex(data):
+	k = rowData[0].keys()
+
+	for i in range(0, len(k)):
+		if k[i] != 'id' and k[i] != 'Class':
+			x = getGAIN(rowData, k[i])
+			print x
 	return 0
 
 def getBestGini():
@@ -229,13 +240,14 @@ with open('weatherTraining.csv') as csvfile:
 #datas = createValidationTestSet(rowData)
 
 tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the model
-print(tree.attribute)
-print(tree.classify(rowData[1]))
-print(tree.children)
-for k in tree.children.keys():
-	print(k,tree.children[k].children)
+#print(tree.attribute)
+#print(tree.classify(rowData[1]))
+#print(tree.children)
+#for k in tree.children.keys():
+#	print(k,tree.children[k].children)
 
-print(rowData)
+
+
 
 # this is kinda a debugger haha
 # datas = createValidationTestSet(rowData)
