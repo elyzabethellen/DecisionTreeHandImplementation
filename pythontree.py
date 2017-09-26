@@ -1,6 +1,8 @@
 #Danny Byrd and Elizabeth Esterly
 #pythontree.py
 #last revision 09/25/2017
+import cProfile, pstats, StringIO
+
 
 import csv
 import math 
@@ -19,6 +21,7 @@ def getClassGAIN(data,attribute,attributeValue,classToPredict):
 	return resultSet
 
 
+
 ########getGain()########
 # data :      the dataset
 # attribute : attribute /column name
@@ -32,6 +35,9 @@ def getGAIN(data,attribute):
 			resultSet[row[attribute]]+= 1
 	return resultSet
 
+##### entropy ###### 
+# calculates the entropy for a given set of values 
+# values :: a list of values  
 def entropy(values):
 	result = 0.0
 	totalSize = float(sum(values)) 
@@ -61,6 +67,11 @@ def splitData(data,attribute):
 
 	return d
 
+
+##### getValues ###### 
+# gets all possible values for a particular attribute 
+# data :: a data set 
+# attribute :: attribute whose values to check
 def getValues(data,attribute):
 	dictionary = {}
 	for row in data:
@@ -80,6 +91,7 @@ def getBestGain(data,attributes,target):
 	newAttribute = sorted(zip(ig, keys), reverse=True)
 	return newAttribute[0]
 
+
 def giniIndex(data):
 	k = rowData[0].keys()
 
@@ -89,11 +101,15 @@ def giniIndex(data):
 			print x
 	return 0
 
+
 def getBestGini():
 	#lower GINI is better
 	return 0
 
-
+###### mostCommonValue ######
+# gets the most common value for an attribute in a dataset
+# dataset :: data set 
+# attribute :: attribute to search
 def mostCommonValue(dataset,attribute):
 	dataResult = splitData(dataset,attribute)
 	maxKey = ""
@@ -104,6 +120,14 @@ def mostCommonValue(dataset,attribute):
 			maxLength = len(dataResult[key]) 
 	return maxKey
 
+###### bID3 ######
+#  this is the ID3 algorithm, runs by making a node, and then creating children 
+#  if there is a decision to split 
+#
+#  data :: a data set
+#  TA :: the target attribute to predict 
+#  attributes :: set of attributes to test (this list shrinks as the algo runs)
+#  whitelist :: attributes the algorithm will ignore (id , class ...etc )
 def bID3(examples,TA,attributes,whitelist):
 	# examples ... training examples
 	# target attribute... value to be predicted
@@ -116,11 +140,15 @@ def bID3(examples,TA,attributes,whitelist):
 	#treeRoot.setValue(mostCommonValue(examples,TA))
 	#all examples are the same...so roll with it 
 
+
 	mostCommonTarget = mostCommonValue(examples,TA)
 	treeRoot.setCommonValue(mostCommonTarget)
 
-	if getValues(examples,TA) == 1:		
+	#print(len(getValues(examples,TA)))
+
+	if len(getValues(examples,TA)) == 1:		
 		treeRoot.setLabel(mostCommonTarget)
+		#print("beans")
 		return treeRoot
 
 	if len(attributes) == 0:
@@ -139,18 +167,19 @@ def bID3(examples,TA,attributes,whitelist):
 		if len(dataSplit[key]) == 0:
 			treeRoot.setDecisionAttribute(gainAttribute)
 			newNode = TNode()
-			newNode.setLabel(mostCommonValue(examples,TA))
+			newNode.setLabel(mostCommonValue(examples,TA))			
 			treeRoot.addChild(key,newNode)
 		else:
 			treeRoot.setDecisionAttribute(gainAttribute)			
 			newNode = bID3(dataSplit[key],TA,copy.copy(attributes),whitelist)
 			treeRoot.addChild(key,newNode)			
 
-	# if all the examples are positive... 
-	# if there are no more attributes... 
 	
 	return treeRoot
 
+###### createValidationTestSet ######
+#  takes a data set an splits it (in half), outputs a dictionary with key for train and test with data divided between those
+#  data :: a data set to split 
 def createValidationTestSet(data):
 	dataset = copy.deepcopy(data) 
 	random.shuffle(dataset)	
@@ -161,15 +190,19 @@ def createValidationTestSet(data):
 		"test":test_data
 	}
 
+###### crossValidate ######
+#  runs a cross validation test system...splits data passed in into train and test and reports an accuracy on test 
+#  rounds :: the number of rounds to run the model for 
+#  data :: a data set
+#  predictionClass :: the attribute in the data set which is getting predicted  
 def crossValidate(rounds,data,predictionClass):
 	results = []
 	for i in range(0,rounds):
 		dataSplit = createValidationTestSet(data)
 		#for key in dataSplit:
 		#	print(key,dataSplit[key])	
-
-		print(len(dataSplit['train']))
-		tree = bID3(dataSplit['train'],predictionClass,dataSplit['train'][0].keys(),["id","Class"]) #train the model
+		#print(len(dataSplit['train']))
+		tree = bID3(dataSplit['train'],predictionClass,dataSplit['train'][0].keys(),["id","Class","DNA"]) #train the model
 		for item in dataSplit['test']:
 			item["guess"] = tree.classify(item)
 
@@ -185,6 +218,15 @@ def crossValidate(rounds,data,predictionClass):
 		results.append(setResult)
 		dataSplit = {}
 	return sum(results) / float(len(results)) 
+
+###### TNode ######
+#  this is a node of the created decision tree 
+#  children :: lookup table, which gives us the ability to traverse nodes in the tree 
+#  attribute :: if the node is a decision node, attribute is the decision attribute 
+#  hasAttribute :: this checks if the node is a decision node 
+#  setLabel :: if node is a leaf, label is the actual value, (not attribute) used
+#  classify :: classifies a given data row, into a target class (note this isn't a recursive functio)
+#  addChild :: attaches a child node to this node
 
 class TNode:
 	attribute = ""
@@ -213,10 +255,15 @@ class TNode:
 		self.attribute = attribute
 	
 	def classify(self,dataRow):
-	
+		
+		'''
+		each node's children set is actually a dictionary, with each key being the split decision attribute, 
+		and the result from the lookup table is the next node... to get to the bottom we just use the 
+		value to be classified (dataRow[currentNode.attribute]) to lookup the right child 
+		'''
+
 		currentNode = self
-		while currentNode.hasAttribute():
-			#print(currentNode.children,dataRow[currentNode.attribute],currentNode.attribute)
+		while currentNode.hasAttribute():			
 			if dataRow[currentNode.attribute] not in currentNode.children.keys():
 				return currentNode.commonValue
 			else:
@@ -236,8 +283,26 @@ with open('weatherTraining.csv') as csvfile:
 	for row in reader:
 		rowData.append(row)
 
-#print("VALIDATION SCORE",crossValidate(1,rowData,"Class")) 
+'''
+# FIRST PIECE OF THE PROFILER... 
+pr = cProfile.Profile()
+pr.enable()
+'''
+print("VALIDATION SCORE",crossValidate(10,rowData,"Class")) 
+
+'''
+# THIS IS THE SECOND PIECE OF THE PROFILER, UNCOMMENT THIS TO SEE PROFILER IN ACTION
+pr.disable()
+s = StringIO.StringIO()
+sortby = 'cumulative'
+ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+ps.print_stats()
+print s.getvalue()
+# END OF THE PROFILER!
+''' 
+
 #datas = createValidationTestSet(rowData)
+
 
 tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the model
 #print(tree.attribute)
@@ -247,7 +312,18 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 #	print(k,tree.children[k].children)
 
 
-
+# tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the model
+# print(tree.attribute)
+# print(tree.classify(rowData[1]))
+# print(tree.classify(rowData[2]))
+# print(tree.classify(rowData[3]))
+# print(tree.classify(rowData[4]))
+# print(tree.classify(rowData[5]))
+# print(tree.children)
+# for k in tree.children.keys():
+# 	print(k,tree.children[k].children)
+# 	for i in tree.children[k].children.keys():
+# 		print("I",i.label)
 
 # this is kinda a debugger haha
 # datas = createValidationTestSet(rowData)
