@@ -97,10 +97,19 @@ def getBestGain(data,attributes,target):
 #attribute : attribute/feature column
 #returns the GINI for a single column split
 #to giniIndex for comparison against other column scores
-def giniIndex(data, attribute):
-	#getGain gives us attribute counts
+def giniIndex(data, attribute, TA):
+	#getGain gives us attribute vals as keys and counts as values
 	x = getGAIN(data, attribute)
-	print x
+	classifications = getValues(data, TA)
+	for i in range(0, len(x)):
+		denominator = x.values()[i] #how many total of this feature values are in the data set
+		#now find how many of each feat val fall w/in each classification
+		for c in classifications:
+			
+
+		print x.keys()[i]
+
+	gi = 1
 	#do the calculations
 	return 0
 
@@ -108,7 +117,7 @@ def giniIndex(data, attribute):
 #data: the dataset to process
 #lower GiniGain val is better with 0 being ideal
 #returns a list (Gini value, Attribute)
-def getBestGiniGain(data):
+def getBestGiniGain(data, TA):
 	bestGiniScore = float('inf')
 	bestAttribute = None
 	k = rowData[0].keys()
@@ -116,7 +125,7 @@ def getBestGiniGain(data):
 	#list comprehension gives us feature columns only
 	k = [x for x in k if x not in blacklist]
 	for i in range(0, len(k)):
-		attributeScore = giniIndex(data, k[i])
+		attributeScore = giniIndex(data, k[i], TA)
 		if attributeScore < bestGiniScore:
 			bestGiniScore = attributeScore
 			bestAttribute = k[i]
@@ -154,6 +163,7 @@ def bID3(examples,TA,attributes,whitelist):
 		if i in attributes:
 			attributes.remove(i)
 
+	print TA
 	treeRoot = TNode()
 	#treeRoot.setValue(mostCommonValue(examples,TA))
 	#all examples are the same...so roll with it
@@ -172,7 +182,7 @@ def bID3(examples,TA,attributes,whitelist):
 		treeRoot.setLabel(mostCommonTarget)
 		return treeRoot
 	# [1] is the column name in the list...[0] is the score
-	#giniAttribute = getBestGiniGain(attributes)[1]
+	#giniAttribute = getBestGiniGain(attributes, TA)[1]
 	#attributes.remove(gainAttribute)
 	gainAttribute = getBestGain(examples,attributes,TA)[1]
 	attributes.remove(gainAttribute)
@@ -359,4 +369,4 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 
 #########
 #testing Gini stuff here
-getBestGiniGain(rowData)
+getBestGiniGain(rowData, 'Class')
