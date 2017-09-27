@@ -99,14 +99,14 @@ def getBestGain(data,attributes,target):
 #to giniIndex for comparison against other column scores
 def giniIndex(data, attribute, TA):
 	#getGain gives us attribute vals as keys and counts as values
+	giniGain = 0.0
 	x = getGAIN(data, attribute)
 	classifications = getValues(data, TA)
 	for i in range(0, len(x)):
-		gi = 1
 		denominator = x.values()[i] #how many total of this feature values are in the data set
 		#now find how many of each feat val fall w/in each classification
-		acc = 0
-		s = 0
+		acc = 0.0
+		s = 0.0
 		#for each of the classification values
 		for c in classifications:
 			# if we haven't found them all in one classification already (save a trip through the data)
@@ -116,11 +116,12 @@ def giniIndex(data, attribute, TA):
 				for r in rowData:
 					if r.get(attribute) == x.keys()[i] and r.get(TA) == c:
 						s += 1
-				#finished iteration through this feature val class vals, divide and square
-				acc = acc + (s/denominator) * (s/denominator)
-		#at the end of an attribute here, weight and collect
-	#final math and return
-	return 0
+				acc = acc + float(s)/denominator * float(s)/denominator
+		#at the end of counting class instances here, weight and collect
+		giniGain += float(denominator)/totalRows * (1 - acc)
+		print x.keys()[i]
+		print giniGain
+	return giniGain
 
 #######getBestGiniGain()#########
 #data: the dataset to process
@@ -138,7 +139,6 @@ def getBestGiniGain(data, TA):
 		if attributeScore < bestGiniScore:
 			bestGiniScore = attributeScore
 			bestAttribute = k[i]
-
 	return [bestGiniScore, bestAttribute]
 
 
@@ -312,6 +312,7 @@ class TNode:
 	def addChild(self,key,child):
 		self.children[key] = child
 
+totalRows = 0
 count = 0
 rowData = []
 attribute = "Class"
@@ -319,6 +320,7 @@ with open('weatherTraining.csv') as csvfile:
 	reader = csv.DictReader(csvfile)	
 	for row in reader:
 		rowData.append(row)
+		totalRows += 1
 
 '''
 # FIRST PIECE OF THE PROFILER... 
@@ -377,4 +379,5 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 
 #########
 #testing Gini stuff here
-getBestGiniGain(rowData, 'Class')
+gTest = getBestGiniGain(rowData, 'Class')
+print gTest
