@@ -9,6 +9,12 @@ import math
 import random 
 import copy
 
+
+###########################################################################################
+#METHODS
+#
+########getClassGAIN()###########
+
 def getClassGAIN(data,attribute,attributeValue,classToPredict):
 	resultSet = {}
 	for row in data:
@@ -19,8 +25,6 @@ def getClassGAIN(data,attribute,attributeValue,classToPredict):
 				resultSet[row[classToPredict]] = resultSet[row[classToPredict]] + 1
 
 	return resultSet
-
-
 
 ########getGain()########
 # data :      the dataset
@@ -35,7 +39,7 @@ def getGAIN(data,attribute):
 			resultSet[row[attribute]]+= 1
 	return resultSet
 
-##### entropy ###### 
+#####entropy() ######
 # calculates the entropy for a given set of values 
 # values :: a list of values  
 def entropy(values):
@@ -45,6 +49,11 @@ def entropy(values):
 		result = result - (value/totalSize) * math.log((value/totalSize),2)
 	return result
 
+##### informationGain #############
+# calculates the information gain for splitting on an attribute
+# value
+# predict0n
+# data
 def informationGain(value,predictOn,data):
 	baseGain = getGAIN(rowData,value)
 	totalGain = getGAIN(rowData,predictOn)
@@ -53,20 +62,17 @@ def informationGain(value,predictOn,data):
 		gainSum = getClassGAIN(data,value,key,predictOn)
 		prob = float(sum(gainSum.values()))/float(sum(totalGain.values())) 
 		ig = ig - prob * entropy(getClassGAIN(data,value,key,predictOn).values())
-
 	return ig
 
-
+##### splitData #############
+# organize data by a key
 def splitData(data,attribute):
 	d = {} 
 	for key in getValues(data,attribute):
 		d[key] = []
-	
 	for item in data:
 		d[item[attribute]].append(item)
-
 	return d
-
 
 ##### getValues ###### 
 # gets all possible values for a particular attribute 
@@ -76,7 +82,6 @@ def getValues(data,attribute):
 	dictionary = {}
 	for row in data:
 		dictionary[row[attribute]] = 1
-
 	return dictionary.keys()
 
 def getBestGain(data,attributes,target):
@@ -91,8 +96,36 @@ def getBestGain(data,attributes,target):
 	newAttribute = sorted(zip(ig, keys), reverse=True)
 	return newAttribute[0]
 
+####### chiTester ##########
+#
+#
+def chiTester(data, attribute, TA):
+	attAndCounts = getGAIN(data, attribute)
+	classAndCounts = getGAIN(data, TA)
+	df = (len(attAndCounts) - 1) * (len(classAndCounts) - 1)  # degrees of freedom
+	#sort by class first
+	rowSums = 0.0
+	for i in range(0, len(classAndCounts)):
+		#and then tally by feature value
+		for a in range(0, len(attAndCounts)):
+			attAndClassCount = 0
+			for r in rowData:
+				if r.get(attribute) == attAndCounts.keys()[a] and r.get(TA) == classAndCounts.keys()[i]:
+					attAndClassCount += 1
+		expected = attAndCounts.values()[a] * (float(classAndCounts.values()[i]) / totalRows)
+		rowSums += (attAndClassCount - (expected * expected)) / expected
+		print rowSums
+	return (rowSums, df)
+#######chiSquared ##########
+#
+#
+def chiSquared(data, attributes, TA):
+	for i in range(0, len(attributes)):
+		theChi = chiTester(data, attributes[i], TA)
+		print theChi
+	return
 
-#######giniIndex()###########
+####### giniIndex ###########
 #data:       dataset
 #attribute : attribute/feature column
 #returns the GINI for a single column split
@@ -119,8 +152,6 @@ def giniIndex(data, attribute, TA):
 				acc = acc + float(s)/denominator * float(s)/denominator
 		#at the end of counting class instances here, weight and collect
 		giniGain += float(denominator)/totalRows * (1 - acc)
-		print x.keys()[i]
-		print giniGain
 	return giniGain
 
 #######getBestGiniGain()#########
@@ -130,7 +161,6 @@ def giniIndex(data, attribute, TA):
 def getBestGiniGain(attributes, data, TA):
 	bestGiniScore = float('inf')
 	bestAttribute = None
-	#list comprehension gives us feature columns only
 	for i in range(0, len(attributes)):
 		attributeScore = giniIndex(data, attributes[i], TA)
 		if attributeScore < bestGiniScore:
@@ -255,6 +285,8 @@ def crossValidate(rounds,data,predictionClass):
 		dataSplit = {}
 	return sum(results) / float(len(results)) 
 
+###################################################################################################
+#CLASS
 ###### TNode ######
 #  this is a node of the created decision tree 
 #  children :: lookup table, which gives us the ability to traverse nodes in the tree 
@@ -311,6 +343,8 @@ class TNode:
 	def addChild(self,key,child):
 		self.children[key] = child
 
+###################################################################################################
+#BEGIN SCRIPT
 totalRows = 0
 count = 0
 rowData = []
@@ -374,9 +408,5 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 # print(" ==== ==== ==== ==== ===== ")
 #print("Classification",tree.classify(datas['test'][1]))
 
-
-'''
-#testing Gini stuff here uncomment next 2 lines to test it manually
-gTest = getBestGiniGain(rowData, 'Class')
-print gTest
-'''
+#TESTING CHI_SQUARED BELOW
+chiSquared(rowData, 'Outlook', 'Class')
