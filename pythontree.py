@@ -198,11 +198,11 @@ def getBestGain(data,attributes,target,summaryData):
 ####### chiTester ##########
 #for testing a single attribute
 #
-def chiTester(confidence, data, attribute, TA):
+def chiTester(confidence, data, attribute, TA, summaryData):
 	if confidence == 0:
 		return True
-	attAndCounts = getGAIN(data, attribute)
-	classAndCounts = getGAIN(data, TA)
+	attAndCounts = getGAIN(data, attribute, summaryData)
+	classAndCounts = getGAIN(data, TA, summaryData)
 	df = (len(attAndCounts) - 1) * (len(classAndCounts) - 1)  # degrees of freedom
 	#sort by class first
 	rowSums = 0.0
@@ -237,9 +237,9 @@ def chiTester(confidence, data, attribute, TA):
 # for testing multiple attributes
 # stub as it may be useful in the future
 # using chiTester instead
-def chiSquared(data, attributes, TA):
+def chiSquared(data, attributes, TA, summaryData):
 	for i in range(0, len(attributes)):
-		theChi = chiTester(data, attributes[i], TA)
+		theChi = chiTester(data, attributes[i], TA, summaryData)
 		print theChi
 	return
 
@@ -320,6 +320,8 @@ def bID3(depth,examples,TA,attributes,whitelist,summaryData,MAX_DEPTH=None):
 
 	depth = depth + 1	
 
+	print("DEPTH=",depth)
+
 	for i in whitelist:
 		if i in attributes:
 			attributes.remove(i)
@@ -339,6 +341,9 @@ def bID3(depth,examples,TA,attributes,whitelist,summaryData,MAX_DEPTH=None):
 	if len(attributes) == 0:
 		treeRoot.setLabel(mostCommonTarget)
 		return treeRoot
+
+
+
 	'''''
 	#GINI INDEX
 	#giniAttribute = getBestGiniGain(attributes, rowData, TA)[1]
@@ -347,6 +352,11 @@ def bID3(depth,examples,TA,attributes,whitelist,summaryData,MAX_DEPTH=None):
 	'''
 
 	gainAttribute = getBestGain(examples,attributes,TA,summaryData)[1]
+
+
+	if not (chiTester(0.95, examples, gainAttribute, TA, summaryData)):	
+		treeRoot.setLabel(mostCommonTarget)
+		return treeRoot
 
 	'''''
 	#Le CHI: needs access to confidence, maybe this can be a global
@@ -553,7 +563,7 @@ totalRows = 0
 count = 0
 rowData = []
 attribute = "Class"
-with open('plain.csv') as csvfile:
+with open('weatherTraining.csv') as csvfile:
 	reader = csv.DictReader(csvfile)	
 	keys = {}
 	for row in reader:
@@ -576,12 +586,12 @@ summaryData = buildSummaryData(rowData)
 
 gainList = getGainValues(rowData,keys,"Class",summaryData)
 
-count = 9
+count = 1
 while count > 0:
 	#specialCandidates = gainList[:count]
 	specialCandidates = ['29', '31', '28', '30', '34', '27', '32','18'] #'AGGT','GGTA'
 	whitelist = list(set(keys) - set(specialCandidates)) 
-	print(specialCandidates,crossValidate(whitelist,summaryData,10,rowData,"Class",6)) 
+	print(specialCandidates,crossValidate(whitelist,summaryData,10,rowData,"Class",None)) 
 	count = count - 1
 
 #gainList = getGainValues(rowData,keys,"Class",summaryData)
@@ -633,7 +643,8 @@ for i in range(1,10,):
 #datas = createValidationTestSet(rowData)
 
 
-tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the model
+#tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the model
+
 #print(tree.attribute)
 #print(tree.classify(rowData[1]))
 #print(tree.children)
@@ -666,8 +677,9 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 #print("Classification",tree.classify(datas['test'][1]))
 
 #
-if(chiTester(0.95, rowData, 'Outlook', 'Class')):
-	print "YES! YES! YES! C'est fini..."
+
+#if(chiTester(0.95, rowData, 'Outlook', 'Class')):
+#	print "YES! YES! YES! C'est fini..."
 
 # pr = cProfile.Profile()
 # pr.enable()
