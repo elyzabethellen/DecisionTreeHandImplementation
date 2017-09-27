@@ -1,4 +1,4 @@
-#Danny Byrd and Elizabeth Esterly
+#Danny Byrd and Elizabeth E. Esterly
 #pythontree.py
 #last revision 09/26/2017
 import cProfile, pstats, StringIO
@@ -97,9 +97,11 @@ def getBestGain(data,attributes,target):
 	return newAttribute[0]
 
 ####### chiTester ##########
+#for testing a single attribute
 #
-#
-def chiTester(data, attribute, TA):
+def chiTester(confidence, data, attribute, TA):
+	if confidence == 0:
+		return True
 	attAndCounts = getGAIN(data, attribute)
 	classAndCounts = getGAIN(data, TA)
 	df = (len(attAndCounts) - 1) * (len(classAndCounts) - 1)  # degrees of freedom
@@ -112,13 +114,30 @@ def chiTester(data, attribute, TA):
 			for r in rowData:
 				if r.get(attribute) == attAndCounts.keys()[a] and r.get(TA) == classAndCounts.keys()[i]:
 					attAndClassCount += 1
+
 		expected = attAndCounts.values()[a] * (float(classAndCounts.values()[i]) / totalRows)
-		rowSums += (attAndClassCount - (expected * expected)) / expected
-		print rowSums
-	return (rowSums, df)
+		rowSums += (attAndClassCount - expected ) * (attAndClassCount - expected) / expected
+	#index corresponds to df
+	fiftyPercentConf = [0.0, 0.004, 0.103, 0.352, 0.711, 1.145, 1.635, 2.167, 2.733, 3.325, 3.940]
+	ninetyFivePercentConf = [0.0, 3.841, 5.991, 7.815, 9.488, 11.070, 12.592, 14.067, 15.507, 16.919, 18.307, 19.675]
+	ninetyNinePercentConf = [0.0, 6.635, 9.210, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67, 23.21]
+	if confidence == 0.5:
+		if fiftyPercentConf[df] > rowSums:
+			return True
+	if confidence == 0.95:
+		if ninetyFivePercentConf[df] > rowSums:
+			return True
+	if confidence == 0.99:
+		if ninetyNinePercentConf[df] > rowSums:
+			return True
+
+	return False
+
+
 #######chiSquared ##########
-#
-#
+# for testing multiple attributes
+# stub as it may be useful in the future
+# using chiTester instead
 def chiSquared(data, attributes, TA):
 	for i in range(0, len(attributes)):
 		theChi = chiTester(data, attributes[i], TA)
@@ -219,9 +238,17 @@ def bID3(examples,TA,attributes,whitelist):
 	'''''
 	#GINI INDEX
 	#giniAttribute = getBestGiniGain(attributes, rowData, TA)[1]
+	#
 	#attributes.remove(giniAttribute)
 	'''
 	gainAttribute = getBestGain(examples,attributes,TA)[1]
+
+	'''''
+	#Le CHI: needs access to confidence, maybe this can be a global
+	#if not (chiTester(confidence, rowData, gainAttribute, TA)):
+		#return
+	'''''
+	
 	attributes.remove(gainAttribute)
 
 	branchValues = getValues(examples,gainAttribute)
@@ -408,5 +435,6 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 # print(" ==== ==== ==== ==== ===== ")
 #print("Classification",tree.classify(datas['test'][1]))
 
-#TESTING CHI_SQUARED BELOW
-chiSquared(rowData, 'Outlook', 'Class')
+#
+if(chiTester(0.95, rowData, 'Outlook', 'Class')):
+	print "YES! YES! YES! C'est fini..."
