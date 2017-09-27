@@ -132,15 +132,51 @@ if len(sys.argv) > 2:
                 newRow[str(counter)] = fixDNACharacter(dna[counter])
                 counter = counter + 1 
 
+            
+
+            # for i in range(0,len(dna)-1,2):               
+            #     newRow["L"+str(i)] = dna[i] + dna[i+1] 
+
+            # for i in range(0,len(dna)-2,3):               
+            #     newRow["Q"+str(i)] = dna[i] + dna[i+1] + dna[i+2]                         
+
             newKeys = newRow.keys(); 
+
+            superRow = {}
+
+            #superRow["DNA"] = newRow["DNA"]
+            #superRow["Class"] = newRow["Class"]
+            # superRow["31"] = newRow["31"]
+            # superRow["29"] = newRow["29"]
+            # superRow["28"] = newRow["28"]
+            # superRow["27"] = newRow["27"]
+            # superRow["30"] = newRow["30"]
+            # superRow["1"] = newRow["1"]
+            # superRow["2"] = newRow["2"]
+            # superRow["3"] = newRow["3"]
+            # superRow["4"] = newRow["4"]
+            # superRow["5"] = newRow["5"]
+            # superRow["6"] = newRow["6"]
+            #superRow["L28"] = newRow["L28"]
+            #superRow["L30"] = newRow["L30"]
+            #superRow["L32"] = newRow["L32"]
+            
+            #superRow["AA"] = newRow["CC"]
+            #superRow["CC"] = newRow["CC"]
+
+            
+            #newKeys = superRow.keys()
+            #if random.choice([1,2,3,4,5]) == 2:
+            #rowData.append(superRow)            
             rowData.append(newRow)
+            #print(rowData)
                
 
     with open(outputCSV, "wb") as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             writer.writerow(newKeys)
             for line in rowData:   
-                listData = []
+                listData = []                
                 for k in newKeys:               
                     if k in line:                    
                         listData.append(line[k])            
