@@ -1,12 +1,14 @@
 # CS529-Fall2017
 
-===== ===== ===== ===== 
+===== ===== ===== ===== </br>
+CS 529 PROJECT 1: DECISION TREES </br>
+Danny Byrd and Elizabeth E. Esterly (Team Neuromancer) </br>
+Please read the following instructions to run our code. </br>
 
-Current instructions for the feature extractor, and explanation of data: 
+**IMPORTANT: Python 2.7.x is required. Some features may not work with Python 3.x. If you do not currently have Python 2.7.x on your system, you can install it here:* https://www.python.org/downloads/
 
-to use, you can run the script using python (I have 2.7 but it should work with > 3.3 too?) 
-using this command: 
-
+<u>FILE LISTING</u><br>
+<ul><li>Feature Extractor </ul>
 
 for training:
 
