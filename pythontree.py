@@ -109,14 +109,19 @@ def giniIndex(data, attribute):
 #lower GiniGain val is better with 0 being ideal
 #returns a list (Gini value, Attribute)
 def getBestGiniGain(data):
-	baseScore = float('inf')
+	bestGiniScore = float('inf')
+	bestAttribute = None
 	k = rowData[0].keys()
 	blacklist = ['Class', 'id', 'DNA']
 	#list comprehension gives us feature columns only
 	k = [x for x in k if x not in blacklist]
 	for i in range(0, len(k)):
 		attributeScore = giniIndex(data, k[i])
-	return
+		if attributeScore < bestGiniScore:
+			bestGiniScore = attributeScore
+			bestAttribute = k[i]
+
+	return [bestGiniScore, bestAttribute]
 
 
 ###### mostCommonValue ######
