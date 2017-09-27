@@ -127,18 +127,15 @@ def giniIndex(data, attribute, TA):
 #data: the dataset to process
 #lower GiniGain val is better with 0 being ideal
 #returns a list (Gini value, Attribute)
-def getBestGiniGain(data, TA):
+def getBestGiniGain(attributes, data, TA):
 	bestGiniScore = float('inf')
 	bestAttribute = None
-	k = rowData[0].keys()
-	blacklist = ['Class', 'id', 'DNA']
 	#list comprehension gives us feature columns only
-	k = [x for x in k if x not in blacklist]
-	for i in range(0, len(k)):
-		attributeScore = giniIndex(data, k[i], TA)
+	for i in range(0, len(attributes)):
+		attributeScore = giniIndex(data, attributes[i], TA)
 		if attributeScore < bestGiniScore:
 			bestGiniScore = attributeScore
-			bestAttribute = k[i]
+			bestAttribute = attributes[i]
 	return [bestGiniScore, bestAttribute]
 
 
@@ -189,9 +186,11 @@ def bID3(examples,TA,attributes,whitelist):
 	if len(attributes) == 0:
 		treeRoot.setLabel(mostCommonTarget)
 		return treeRoot
-	# [1] is the column name in the list...[0] is the score
-	#giniAttribute = getBestGiniGain(attributes, TA)[1]
-	#attributes.remove(gainAttribute)
+	'''''
+	#GINI INDEX
+	#giniAttribute = getBestGiniGain(attributes, rowData, TA)[1]
+	#attributes.remove(giniAttribute)
+	'''
 	gainAttribute = getBestGain(examples,attributes,TA)[1]
 	attributes.remove(gainAttribute)
 
@@ -201,13 +200,13 @@ def bID3(examples,TA,attributes,whitelist):
 	for key in dataSplit.keys():
 		if len(dataSplit[key]) == 0:
 			treeRoot.setDecisionAttribute(gainAttribute)
-			# treeRoot.setDecisionAttribute(giniAttribute)
+			# treeRoot.setDecisionAttribute(giniAttribute) #GINI INDEX
 			newNode = TNode()
 			newNode.setLabel(mostCommonValue(examples,TA))
 			treeRoot.addChild(key,newNode)
 		else:
 			treeRoot.setDecisionAttribute(gainAttribute)
-			#treeRoot.setDecisionAttribute(giniAttribute)
+			#treeRoot.setDecisionAttribute(giniAttribute) #GINI INDEX
 			newNode = bID3(dataSplit[key],TA,copy.copy(attributes),whitelist)
 			treeRoot.addChild(key,newNode)			
 
@@ -338,7 +337,7 @@ ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
 ps.print_stats()
 print s.getvalue()
 # END OF THE PROFILER!
-''' 
+'''
 
 #datas = createValidationTestSet(rowData)
 
@@ -376,8 +375,8 @@ tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the mod
 #print("Classification",tree.classify(datas['test'][1]))
 
 
-
-#########
-#testing Gini stuff here
+'''
+#testing Gini stuff here uncomment next 2 lines to test it manually
 gTest = getBestGiniGain(rowData, 'Class')
 print gTest
+'''
