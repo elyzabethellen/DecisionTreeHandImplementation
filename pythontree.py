@@ -102,15 +102,24 @@ def giniIndex(data, attribute, TA):
 	x = getGAIN(data, attribute)
 	classifications = getValues(data, TA)
 	for i in range(0, len(x)):
+		gi = 1
 		denominator = x.values()[i] #how many total of this feature values are in the data set
 		#now find how many of each feat val fall w/in each classification
+		acc = 0
+		s = 0
+		#for each of the classification values
 		for c in classifications:
-			
-
-		print x.keys()[i]
-
-	gi = 1
-	#do the calculations
+			# if we haven't found them all in one classification already (save a trip through the data)
+			if s != denominator:
+				s = 0 #reset our sum
+				#find how many row entries match both the value and current classification
+				for r in rowData:
+					if r.get(attribute) == x.keys()[i] and r.get(TA) == c:
+						s += 1
+				#finished iteration through this feature val class vals, divide and square
+				acc = acc + (s/denominator) * (s/denominator)
+		#at the end of an attribute here, weight and collect
+	#final math and return
 	return 0
 
 #######getBestGiniGain()#########
@@ -163,7 +172,6 @@ def bID3(examples,TA,attributes,whitelist):
 		if i in attributes:
 			attributes.remove(i)
 
-	print TA
 	treeRoot = TNode()
 	#treeRoot.setValue(mostCommonValue(examples,TA))
 	#all examples are the same...so roll with it
