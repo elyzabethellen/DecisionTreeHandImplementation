@@ -199,36 +199,50 @@ def getBestGain(data,attributes,target,summaryData):
 #for testing a single attribute
 #
 def chiTester(confidence, data, attribute, TA, summaryData):
+	
+
 	if confidence == 0:
 		return True
+	
 	attAndCounts = getGAIN(data, attribute, summaryData)
 	classAndCounts = getGAIN(data, TA, summaryData)
 	df = (len(attAndCounts) - 1) * (len(classAndCounts) - 1)  # degrees of freedom
+	if df == 0:
+		return False
+
 	#sort by class first
 	rowSums = 0.0
 	for i in range(0, len(classAndCounts)):
+
 		#and then tally by feature value
 		for a in range(0, len(attAndCounts)):
 			attAndClassCount = 0
+
 			for r in rowData:
 				if r.get(attribute) == attAndCounts.keys()[a] and r.get(TA) == classAndCounts.keys()[i]:
 					attAndClassCount += 1
 
 		expected = attAndCounts.values()[a] * (float(classAndCounts.values()[i]) / totalRows)
+		#print(attAndClassCount)
+		#print("RS ADD VAL",(attAndClassCount - expected ),(attAndClassCount - expected), expected)
 		rowSums += (attAndClassCount - expected ) * (attAndClassCount - expected) / expected
 	#index corresponds to df
 	fiftyPercentConf = [0.0, 0.004, 0.103, 0.352, 0.711, 1.145, 1.635, 2.167, 2.733, 3.325, 3.940]
 	ninetyFivePercentConf = [0.0, 3.841, 5.991, 7.815, 9.488, 11.070, 12.592, 14.067, 15.507, 16.919, 18.307, 19.675]
 	ninetyNinePercentConf = [0.0, 6.635, 9.210, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67, 23.21]
+	
+
 	if confidence == 0.5:
-		if fiftyPercentConf[df] > rowSums:
+		if fiftyPercentConf[df] < rowSums:
 			return True
 	if confidence == 0.95:
-		if ninetyFivePercentConf[df] > rowSums:
+		if ninetyFivePercentConf[df] < rowSums:
 			return True
 	if confidence == 0.99:
-		if ninetyNinePercentConf[df] > rowSums:
+		if ninetyNinePercentConf[df] < rowSums:
 			return True
+
+
 
 	return False
 
@@ -274,8 +288,6 @@ def giniIndex(data, attribute, TA, summaryData):
 def getBestGiniGain(attributes, data, TA, summaryData):
 	bestGiniScore = float('inf')
 	bestAttribute = None
-	for i in range(0, len(attributes)):
-		attributeScore = giniIndex(data, attributes[i], TA)
 
 	#list comprehension gives us feature columns only
 	
@@ -313,14 +325,14 @@ def mostCommonValue(dataset,attribute,summaryData):
 #  TA :: the target attribute to predict 
 #  attributes :: set of attributes to test (this list shrinks as the algo runs)
 #  whitelist :: attributes the algorithm will ignore (id , class ...etc )
-def bID3(depth,examples,TA,attributes,whitelist,summaryData,MAX_DEPTH=None):
+def bID3(depth,examples,TA,attributes,whitelist,summaryData,MAX_DEPTH=None,TREE_DEPTH=[]):
 	# examples ... training examples
 	# target attribute... value to be predicted
 	# attributes to be tested 
 
 	depth = depth + 1	
 
-	print("DEPTH=",depth)
+	TREE_DEPTH.append(depth)
 
 	for i in whitelist:
 		if i in attributes:
@@ -342,8 +354,6 @@ def bID3(depth,examples,TA,attributes,whitelist,summaryData,MAX_DEPTH=None):
 		treeRoot.setLabel(mostCommonTarget)
 		return treeRoot
 
-
-
 	'''''
 	#GINI INDEX
 	#giniAttribute = getBestGiniGain(attributes, rowData, TA)[1]
@@ -352,31 +362,21 @@ def bID3(depth,examples,TA,attributes,whitelist,summaryData,MAX_DEPTH=None):
 	'''
 
 	gainAttribute = getBestGain(examples,attributes,TA,summaryData)[1]
+	#gainAttribute = getBestGiniGain(attributes, examples, TA, summaryData)[1]
 
-
-	if not (chiTester(0.95, examples, gainAttribute, TA, summaryData)):	
+	if not (chiTester(0.99, examples, gainAttribute, TA, summaryData)):	
 		treeRoot.setLabel(mostCommonTarget)
 		return treeRoot
 
-	'''''
+
+	'''	
 	#Le CHI: needs access to confidence, maybe this can be a global
-	#if not (chiTester(confidence, rowData, gainAttribute, TA)):
-		#return
-	'''''
-
-	#gainAttribute = getBestGain(examples,attributes,TA)[1]
-
-
-	if MAX_DEPTH == depth:
-		treeRoot.setLabel(mostCommonTarget)
-		return treeRoot
-
-	#gainAttribute = getBestGiniGain(attributes, rowData, TA, summaryData)[1] 
-	gainAttribute = getBestGain(examples,attributes,TA,summaryData)[1] 
-
+	'''
+	# if MAX_DEPTH == depth:
+	# 	treeRoot.setLabel(mostCommonTarget)
+	# 	return treeRoot
 
 	attributes.remove(gainAttribute)
-
 	branchValues = getValues(summaryData,gainAttribute)
 	dataSplit = splitData(examples,gainAttribute,summaryData)
 
@@ -389,11 +389,8 @@ def bID3(depth,examples,TA,attributes,whitelist,summaryData,MAX_DEPTH=None):
 			treeRoot.addChild(key,newNode)
 		else:
 			treeRoot.setDecisionAttribute(gainAttribute)
-			#treeRoot.setDecisionAttribute(giniAttribute) #GINI INDEX
-			#newNode = bID3(dataSplit[key],TA,copy.copy(attributes),whitelist)
-
 			treeRoot.setDecisionAttribute(gainAttribute)			
-			newNode = bID3(depth,dataSplit[key],TA,copy.copy(attributes),whitelist,summaryData,MAX_DEPTH)
+			newNode = bID3(depth,dataSplit[key],TA,copy.copy(attributes),whitelist,summaryData,MAX_DEPTH,TREE_DEPTH)
 			treeRoot.addChild(key,newNode)			
 
 	
@@ -411,7 +408,7 @@ def createValidationTestSet(data):
 	
 	#train_data = dataset[:len(dataset)/2] #copy.deepcopy(dataset[:len(dataset)/2])
 	
-	factor = 10
+	factor = 2 #10
 
 	train_data = dataset[:(factor - 1)*len(dataset)/factor]
 	for row in train_data:
@@ -422,6 +419,8 @@ def createValidationTestSet(data):
 
 	# for i in test_data:
 	# 	print(i)
+
+	print("TRAIN LENGTH",len(train_data),"TEST LENGTH",len(test_data))
 
 	return {
 		"train":train_data,
@@ -470,9 +469,13 @@ def crossValidate(whitelist,summaryData,rounds,data,predictionClass,maxDepth):
 		#for key in dataSplit:
 		#	print(key,dataSplit[key])	
 		#print(len(dataSplit['train']))
-		tree = bID3(0,dataSplit['train'],predictionClass,dataSplit['train'][0].keys(),whitelist,summaryData,maxDepth) #train the model
+		depthCollection = []
+
+		tree = bID3(0,dataSplit['train'],predictionClass,dataSplit['train'][0].keys(),whitelist,summaryData,maxDepth,depthCollection) #train the model
 		for item in dataSplit['test']:
 			item["guess"] = tree.classify(item)
+
+		print("MAX DEPTH",max(depthCollection))
 
 		wrong = 0
 		correct = 0
@@ -563,7 +566,7 @@ totalRows = 0
 count = 0
 rowData = []
 attribute = "Class"
-with open('weatherTraining.csv') as csvfile:
+with open('plain.csv') as csvfile:
 	reader = csv.DictReader(csvfile)	
 	keys = {}
 	for row in reader:
@@ -577,22 +580,46 @@ with open('weatherTraining.csv') as csvfile:
 # pr = cProfile.Profile()
 # pr.enable()
 
-summaryData = buildSummaryData(rowData)
 # #gainList = getGainValues(rowData,keys,"Class",summaryData)
 # specialCandidates = ['29', '31', '28', '30', '34', '27', '32','AGGT','GGTA']
 # whitelist = list(set(keys) - set(specialCandidates)) 
 # tree = bID3(0,rowData,"Class",rowData[0].keys(),whitelist,summaryData,6)
 # createOutSubmission("subOne.csv",whitelist,tree)
 
-gainList = getGainValues(rowData,keys,"Class",summaryData)
+summaryData = buildSummaryData(rowData)
+#print(chiTester(0.95,rowData,"X2","Y",summaryData))
 
+
+gainList = getGainValues(rowData,keys,"Class",summaryData)
 count = 1
+
+whitelist = []
+for key in keys:
+	try:
+		float(key)
+		whitelist.append(key)
+	except ValueError:
+		#whitelist.append(key)
+		pass
+whitelist.append("id")
+whitelist.append("Class")
+whitelist.append("DNA")
+print(whitelist)
+
 while count > 0:
-	#specialCandidates = gainList[:count]
-	specialCandidates = ['29', '31', '28', '30', '34', '27', '32','18'] #'AGGT','GGTA'
-	whitelist = list(set(keys) - set(specialCandidates)) 
-	print(specialCandidates,crossValidate(whitelist,summaryData,10,rowData,"Class",None)) 
+	specialCandidates = gainList[:count]
+	otherCandidates = list(set(keys) - set(specialCandidates))[:count]  #['29', '31', '28', '30', '34', '27', '32','18'] #'AGGT','GGTA'
+	#whitelist = list(set(keys) - set(specialCandidates) - set(otherCandidates)) 
+	#print("HEY",list(specialCandidates+otherCandidates))
+	#print(whitelist,set(keys))
+	
+	print(crossValidate(whitelist,summaryData,1,rowData,"Class",None)) 
 	count = count - 1
+
+
+
+#for stat in range(0.0,1,0.01):
+#print("OUTPUT",chiTester(0.50,rowData,"AAAA","Class",summaryData)) 
 
 #gainList = getGainValues(rowData,keys,"Class",summaryData)
 
@@ -644,6 +671,10 @@ for i in range(1,10,):
 
 
 #tree = bID3(rowData,attribute,rowData[0].keys(),["id",attribute]) #train the model
+
+
+
+
 
 #print(tree.attribute)
 #print(tree.classify(rowData[1]))
