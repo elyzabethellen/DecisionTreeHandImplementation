@@ -145,7 +145,8 @@ def splitData(data,attribute,summaryData):
 def getValues(summaryData,attribute):
 	return summaryData[attribute]
 
-
+##### getGainValues ###### 
+# created a list of attributes for a dataset, sorted by best gain to worst 
 def getGainValues(data,attributes,target,summaryData):
 	ig = []
 	keys = []
@@ -158,6 +159,8 @@ def getGainValues(data,attributes,target,summaryData):
 	newAttribute = list(map((lambda x: x[1]), sorted(zip(ig, keys), reverse=True)))  #sorted(zip(ig, keys), reverse=True) #sorted(zip(ig, keys), reverse=True)
 	return newAttribute
 
+##### getGiniValues ###### 
+# created a list of attributes for a dataset, sorted by best gini to worst 
 def getGiniValues(data,attributes,target,summaryData):
 	ig = []
 	keys = []

@@ -2,13 +2,14 @@
 
 from pythontree import *
 from data import *
+from experimentTools import *
 
 #experiments with INFOGAIN 
 #chiVALUES
 #experiments with GINI
 #chiVALUES
 
-CVRounds = 1 #this is usually greater for testing 
+CVRounds = 20 #this is usually greater for testing 
 supportedChiValues = [0.0,0.25,0.50,0.95,0.99]
 
 def informationGainExperiments(data,summaryData):
@@ -39,7 +40,30 @@ def kaggleSubmissionExperiment(data,summaryData):
 
 def firstPlaceKaggleWork(data,summaryData):
 	
+	dataKeys = data[0].keys()
+	whitelist = ["id","Class","DNA"]
+	cleanKeys = list(set(dataKeys) - set(whitelist))
+
+	gainSet = getGainValues(data,cleanKeys,"Class",summaryData)[:15]
+	giniSet = getGiniValues(data,cleanKeys,"Class",summaryData)[:15]
+
+	whiteListGain = buildWhiteList(gainSet,whitelist,dataKeys)
+	whiteListGINI = buildWhiteList(giniSet,whitelist,dataKeys)
+	whiteListSanity = buildWhiteList(['29', '31', '28', '30', '34', '27', '32'],whitelist,dataKeys)
+	
+	print(giniSet,gainSet)
+	# print("score SANITY = ",crossValidate(whiteListSanity,summaryData,CVRounds,data,"Class",6,0.0,"GAIN"))
+	# print("score GAIN LIST = ",crossValidate(whiteListGain,summaryData,CVRounds,data,"Class",6,0.0,"GAIN")) 
+	# print("score GINI LIST = ",crossValidate(whiteListGINI,summaryData,CVRounds,data,"Class",6,0.0,"GAIN")) 
+
+
+
+	#print(dataKeys)
+	#whitelist = ["id","Class","DNA"]
+	#print("score = ",crossValidate(whitelist,summaryData,CVRounds,data,"Class",6,0.0,"GAIN")) 
+	#print("lets begin")
+	''' 
 	whitelist = ["id","Class","DNA"]
 	tree = bID3(0,rowData,"Class",data[0].keys(),whitelist,summaryData,6,[],0,"GAIN")
 	createOutSubmission("testing.csv",whitelist,tree)
-
+	'''

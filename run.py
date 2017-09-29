@@ -9,10 +9,10 @@ def program():
 	from experiments import firstPlaceKaggleWork
 	from featureBuilder import preprocessData
 
-	GAIN = True
-	GINI = True
-	KAGGLETEST = True
-	KAGGLEBEST = False
+	GAIN = False
+	GINI = False
+	KAGGLETEST = False
+	KAGGLEBEST = True
 
 	trainingData = preprocessData(parseDataFile('training.csv'))
 	summaryData = buildSummaryData(trainingData)

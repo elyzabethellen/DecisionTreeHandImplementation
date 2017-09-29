@@ -135,7 +135,8 @@ def preprocessData(importedData):
         splitDNA(row)
         # DNACharCounts(row) #-> uncomment these to add features
         # fourLetterPermutationBoolean(row) -> uncomment these to add features
-        # twoLetterFeature(row) -> uncomment these to add features
+        twoLetterFeature(row) #-> uncomment these to add features
+        fourLetterFeature(row)
         # markovmodel(row)
 
     return importedData
