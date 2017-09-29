@@ -15,7 +15,7 @@ Please read the following instructions to run our code. </br>
         <li>INFO GAIN with all levels of CHI SQUARED CONFIDENCE </li>
         <li>GINI INDEX with all levels of CHI SQUARED CONFIDENCE </li>
         <li>KAGGLE - this one will load the dataset , make a tree with basic presets and create a submission file called sampleSubmission.csv </li>
-        <li>KAGGLE Competition - this one does’t really have anything in it, but we could put our best experiment sample there or something </li><ul>
+        <li>KAGGLE Competition - this one does’t really have anything in it, but we could put our best experiment sample there or something </li></ul>
     <li>run.py runs the 4 experiment functions, you can turn on and off different parts </li>
     <li>featureBuilder.py - works on the imported data itself … there is a method called “preprocessData” (line: 133)  which has a list of transformations you can do on the data itself .. so like there are some commented out functions, each just modifies the data in place… so you can just turn them on or off (trees take a really long time with more of these, so we’d probably want to leave most of them off for the final turn in on the assignment)  and it gets called as data is imported, and as kaggle submissions are imported as well….so its a single point to change features for train / test 
     <li>launch.py - called from a shell script, this guy “runs” run.py … but first it checks python version is correct</li> 
