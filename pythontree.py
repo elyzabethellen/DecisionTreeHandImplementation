@@ -3,7 +3,6 @@
 #last revision 09/26/2017
 import cProfile, pstats, StringIO
 import pdb
-import matplotlib.pyplot as plt
 from data import *
 import csv
 import math 
