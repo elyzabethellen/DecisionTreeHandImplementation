@@ -8,19 +8,21 @@ Please read the following instructions to run our code. </br>
 **IMPORTANT: Python 2.7.x is required. Some features may not work with Python 3.x. If you do not currently have Python 2.7.x on your system, you can install it here:* https://www.python.org/downloads/
 
 <u>FILE LISTING</u><br>
-<ul><li>Feature Extractor </ul>
+<ul><li>pythontree.py - has all of the old stuff, but just the methods now, so everything we wrote for the tree
+    <li>data.py - has data helper methods, like the methods for loading a file, saving a file, and cross validation methods to divide data set into test / train 
+    <li>experiments.py - has a preset list of experiments which are run as functions (this is where you can write your own etc… data is ready to go by the time it gets here! ) … there are 4 functions that run: 
+        INFO GAIN with all levels of CHI SQUARED CONFIDENCE 
+        GINI INDEX with all levels of CHI SQUARED CONFIDENCE
+        KAGGLE - this one will load the dataset , make a tree with basic presets and create a submission file called sampleSubmission.csv 
+        KAGGLE Competition - this one does’t really have anything in it , but we could put our best experiment sample there or something 
 
-for training:
+    <li>run.py…. runs these 4 functions , so like if you open that file, you can turn off different parts (good if you just want to play, so like turn off 1-3 and then run the kaggle competition function where we can dump all our ambitions and dreams 
+    
+    <li>featureBuilder.py - got organized into functions , it doesn’t even read a file anymore!! now it just works on the imported data itself … there is a method called “preprocessData” (line: 133)  which has a list of transformations you can do on the data itself .. so like there are some commented out functions, each just modifies the data in place… so you can just turn them on or off (trees take a really long time with more of these, so we’d probably want to leave most of them off for the final turn in on the assignment)  and it gets called as data is imported, and as kaggle submissions are imported as well….so its a single point to change features for train / test 
 
-**python featureBuilder.py [starting CSV file] [output CSV file]**
+    <li>launch.py - called from a shell script, this guy “runs” run.py … but first it checks python version is correct 
+    <li>launcher.sh - updated to run a python script, instead of an R script …</ul>
 
-OR 
-
-for testing: 
-
-**python featureBuilder.py [starting CSV file] [output CSV file] h** 
-
-... the extra h at the end is just a flag which turns off "Class" column (for the real data which won't have this column :)
 
 this will build an output CSV file will the following additional features from the main data: 
 
