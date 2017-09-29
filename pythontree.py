@@ -401,6 +401,8 @@ def crossValidate(whitelist,summaryData,rounds,data,predictionClass,maxDepth,chi
 
 		#print("MAX DEPTH=",max(depthCollection))
 
+		#print("MAX",max(depthCollection))
+
 		wrong = 0
 		correct = 0
 		total = len(dataSplit['test'])
@@ -416,7 +418,7 @@ def crossValidate(whitelist,summaryData,rounds,data,predictionClass,maxDepth,chi
 		results.append(setResult)
 		dataSplit = {}
 
-	return sum(results) / float(len(results)) 
+	return ("depth= "+str(max(depthCollection)),sum(results) / float(len(results)))
 
 
 
