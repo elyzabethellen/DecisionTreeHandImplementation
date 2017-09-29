@@ -1,2 +1,2 @@
 #!/bin/bash
-Rscript --vanilla treeTest.R "training.csv" 
+python launch.py

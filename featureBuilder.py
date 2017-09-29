@@ -3,10 +3,12 @@ import collections
 import sys
 import random
 
-
+CUSTOM_FEATURES = False
 
 rowData = []
 
+
+# chooses a likely option for an unknown character
 def fixDNACharacter(character):
     if character == "D":
         return random.choice(["A","G","T"])
@@ -19,6 +21,7 @@ def fixDNACharacter(character):
     
     return character    
 
+# counts value in string
 def occurrences(string, sub):
     count = start = 0
     while True:
@@ -28,6 +31,7 @@ def occurrences(string, sub):
         else:
             return count
 
+# creates a list of two letter permutations for all possible 4 letter combinations 
 def createTwoLetterPermutations():
     letterSample = ["A","T","C","G"]
     permutations = []
@@ -36,6 +40,7 @@ def createTwoLetterPermutations():
             permutations.append(letter+secondletter)
     return permutations    
 
+# creates a four letter list of permutations for all possible 4 letter combinations 
 def createPermutations(): 
     letterSample = ["A","T","C","G"]
     permutations = []
@@ -46,6 +51,7 @@ def createPermutations():
                     permutations.append(letter+secondletter+thirdletter+fourthletter)
     return permutations
 
+# creates categories for intervals of a continuous input
 def fourWaySplit(thisInput):
     if thisInput == 0:
         return "0"
@@ -58,14 +64,17 @@ def fourWaySplit(thisInput):
     if thisInput < 1.0:
         return "4"    
 
+# creates 2 categories for intervals of a continuous input
 def threshold(thisInput,ceiling):
     if thisInput < ceiling:
         return "Y"
 
     return "N"
 
-def markovmodel(stringData):
+# builds a dictionary which creates a state transition/ probability lookup table for a given string
+def markovmodel(row):
 
+    stringData = row["DNA"]
     dictionary = {} 
     for permutation in createTwoLetterPermutations():
         getFirstLetter = permutation[0]
@@ -75,111 +84,59 @@ def markovmodel(stringData):
         else:
             dictionary[permutation] = fourWaySplit(0) 
     
-    return dictionary   
+    
+    keys = dictionary.keys()           
+    for k in keys:
+        row[k] = dictionary.get(k)
 
-lock = 0
+# splits a DNA string into a feature per DNA character 
+def splitDNA(row):
+    counter = 0
+    for letter in row["DNA"]:        
+        row[str(counter)] = fixDNACharacter(row["DNA"][counter])
+        counter = counter + 1 
+    
 
+# track specific character counts in DNA string
+def DNACharCounts(row):
+    dna = row["DNA"]
+    totalcount = len(dna)
+    row["first"] = dna[0] #adds the first letter 
+    row["last"] = dna[totalcount-1] # adds the last letter 
+    row["25pA"] = threshold(float(dna.count("A"))/totalcount,0.25) # gives a positive boolean if string is greater than 25% A 
+    row["25pT"] = threshold(float(dna.count("T"))/totalcount,0.25) # gives a positive boolean if string is greater than 25% T 
+    row["25pG"] = threshold(float(dna.count("G"))/totalcount,0.25) # gives a positive boolean if string is greater than 25% G 
+    row["25pC"] = threshold(float(dna.count("C"))/totalcount,0.25) # gives a positive boolean if string is greater than 25% C 
 
+#adds a boolean value to the training 
+def fourLetterPermutationBoolean(row): 
+    dna = row["DNA"]
+    for permutation in createPermutations():
+        row[permutation] = "F"
+        if dna.count(permutation) > 0:
+            row[permutation] = "T"
 
-newKeys = {}
+# adds a column for each i+1 position, so each new column has 2 DNA letters (labeled with L)
+def twoLetterFeature(row):
+    dna = row["DNA"]
+    for i in range(0,len(dna)-1,2):
+        row["L"+str(i)] = dna[i] + dna[i+1] 
 
-d = collections.OrderedDict() # using an ordered dict for cleaner ordering / logic 
-
-if len(sys.argv) > 2: 
-    inputCSV = sys.argv[1]
-    outputCSV = sys.argv[2]
-    startingKeys = ["id","DNA","Class"]
-
-
-    with open(inputCSV) as csvfile:
-        reader = csv.DictReader(csvfile,startingKeys)
+# adds a column for each i+2 position, so each new Q column has 3 DNA letters (labeled with Q)
+def fourLetterFeature(row):
+    dna = row["DNA"]
+    for i in range(0,len(dna)-2,3):
+        row["Q"+str(i)] = dna[i] + dna[i+1] + dna[i+2]       
         
-        for row in reader:
-            newRow = collections.OrderedDict()
-            #if lock < 2: # this was just for testing 
 
-            for k in row.keys():                
-                if k == "Class":
-                    if len(sys.argv) == 3:
-                        newRow[k] = row[k]                        
-                else:
-                    newRow[k] = row[k]
+#process imported CSV data, to add features, clean ETC 
+def preprocessData(importedData):
+    for row in importedData:
+        splitDNA(row)
+        # DNACharCounts(row) #-> uncomment these to add features
+        # fourLetterPermutationBoolean(row) -> uncomment these to add features
+        # twoLetterFeature(row) -> uncomment these to add features
+        # markovmodel(row)
 
-            dna = row['DNA']
-            #lock = lock + 1
-            
-            totalcount = len(dna)
-            newRow["first"] = dna[0]
-            newRow["last"] = dna[totalcount-1]
-            newRow["25pA"] = threshold(float(dna.count("A"))/totalcount,0.25)
-            newRow["25pT"] = threshold(float(dna.count("T"))/totalcount,0.25)
-            newRow["25pG"] = threshold(float(dna.count("G"))/totalcount,0.25)
-            newRow["25pC"] = threshold(float(dna.count("C"))/totalcount,0.25)
-            
-            dictionary = markovmodel(dna)
-            keys = dictionary.keys()           
-            for k in keys:
-              newRow[k] = dictionary.get(k)
+    return importedData
 
-            for permutation in createPermutations():
-                newRow[permutation] = "F"
-                if dna.count(permutation) > 0:
-                    newRow[permutation] = "T"
-
-
-            counter = 0
-            for letter in dna:        
-                newRow[str(counter)] = fixDNACharacter(dna[counter])
-                counter = counter + 1 
-
-            
-
-            # for i in range(0,len(dna)-1,2):               
-            #     newRow["L"+str(i)] = dna[i] + dna[i+1] 
-
-            # for i in range(0,len(dna)-2,3):               
-            #     newRow["Q"+str(i)] = dna[i] + dna[i+1] + dna[i+2]                         
-
-            newKeys = newRow.keys(); 
-
-            superRow = {}
-
-            #superRow["DNA"] = newRow["DNA"]
-            #superRow["Class"] = newRow["Class"]
-            # superRow["31"] = newRow["31"]
-            # superRow["29"] = newRow["29"]
-            # superRow["28"] = newRow["28"]
-            # superRow["27"] = newRow["27"]
-            # superRow["30"] = newRow["30"]
-            # superRow["1"] = newRow["1"]
-            # superRow["2"] = newRow["2"]
-            # superRow["3"] = newRow["3"]
-            # superRow["4"] = newRow["4"]
-            # superRow["5"] = newRow["5"]
-            # superRow["6"] = newRow["6"]
-            #superRow["L28"] = newRow["L28"]
-            #superRow["L30"] = newRow["L30"]
-            #superRow["L32"] = newRow["L32"]
-            
-            #superRow["AA"] = newRow["CC"]
-            #superRow["CC"] = newRow["CC"]
-
-            
-            #newKeys = superRow.keys()
-            #if random.choice([1,2,3,4,5]) == 2:
-            #rowData.append(superRow)            
-            rowData.append(newRow)
-            #print(rowData)
-               
-
-    with open(outputCSV, "wb") as csv_file:
-            writer = csv.writer(csv_file, delimiter=',')
-            writer.writerow(newKeys)
-            for line in rowData:   
-                listData = []                
-                for k in newKeys:               
-                    if k in line:                    
-                        listData.append(line[k])            
-                writer.writerow(listData)
-else:
-    print("Please specify an input and output CSV file")
